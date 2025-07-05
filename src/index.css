@@ -1,0 +1,255 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 221 100% 60%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221 100% 60%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  .property-card {
+    @apply relative bg-white rounded-lg overflow-hidden shadow-md transition-all duration-300 hover:shadow-lg;
+  }
+
+  .property-image {
+    @apply aspect-[4/3] w-full object-cover transition-transform duration-300;
+  }
+
+  .property-card:hover .property-image {
+    @apply scale-105;
+  }
+  
+  .property-badge {
+    @apply absolute top-4 left-4 px-2 py-1 text-xs font-medium rounded-md;
+  }
+
+  .property-details {
+    @apply p-4;
+  }
+
+  .property-title {
+    @apply text-lg font-semibold mb-1 text-gray-800;
+  }
+
+  .property-location {
+    @apply flex items-center text-sm text-gray-500 mb-3;
+  }
+
+  .property-meta {
+    @apply flex items-center justify-between text-sm text-gray-600 border-t pt-3;
+  }
+
+  .meta-item {
+    @apply flex items-center gap-1;
+  }
+
+  .section-title {
+    @apply font-display text-3xl md:text-4xl lg:text-5xl font-bold mb-2;
+  }
+  
+  .section-subtitle {
+    @apply text-gray-500 text-lg mb-8 max-w-2xl;
+  }
+
+  .category-card {
+    @apply relative p-6 rounded-lg transition-all duration-300 flex flex-col items-center justify-center text-center hover:shadow-md bg-white hover:bg-gray-50 hover:-translate-y-1;
+  }
+
+  .category-icon {
+    @apply mb-4 p-4 rounded-full bg-blue-50 text-real-blue;
+  }
+
+  .location-card {
+    @apply relative overflow-hidden rounded-lg h-64;
+  }
+
+  .location-card-image {
+    @apply absolute inset-0 w-full h-full object-cover transition-transform duration-500;
+  }
+
+  .location-card:hover .location-card-image {
+    @apply scale-110;
+  }
+
+  .location-card-overlay {
+    @apply absolute inset-0 bg-gradient-to-t from-black/70 to-transparent;
+  }
+
+  .location-card-content {
+    @apply absolute bottom-0 left-0 p-6 text-white;
+  }
+
+  .agent-card {
+    @apply bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300;
+  }
+
+  .agent-image-wrapper {
+    @apply relative overflow-hidden;
+  }
+
+  .agent-image {
+    @apply w-full aspect-[3/4] object-cover transition-transform duration-300;
+  }
+
+  .agent-card:hover .agent-image {
+    @apply scale-105;
+  }
+
+  .agent-social {
+    @apply absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-0 transition-opacity duration-300;
+  }
+
+  .agent-card:hover .agent-social {
+    @apply opacity-100;
+  }
+
+  .social-icon {
+    @apply p-2 rounded-full bg-white text-gray-800 hover:bg-real-blue hover:text-white transition-colors duration-200;
+  }
+
+  .agent-details {
+    @apply p-4 text-center;
+  }
+
+  .agent-name {
+    @apply font-semibold text-lg;
+  }
+
+  .agent-position {
+    @apply text-gray-500 text-sm mb-2;
+  }
+
+  .agent-contact {
+    @apply flex items-center justify-center gap-1 text-real-blue text-sm;
+  }
+
+  .testimonial-card {
+    @apply bg-white p-6 rounded-lg shadow-md;
+  }
+
+  .testimonial-header {
+    @apply flex items-center gap-4 mb-4;
+  }
+
+  .testimonial-image {
+    @apply w-14 h-14 rounded-full object-cover;
+  }
+
+  .testimonial-author {
+    @apply font-semibold;
+  }
+
+  .testimonial-position {
+    @apply text-sm text-gray-500;
+  }
+
+  .testimonial-stars {
+    @apply flex text-yellow-400 mb-3;
+  }
+
+  .testimonial-content {
+    @apply text-gray-600 italic;
+  }
+
+  .blog-card {
+    @apply bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300;
+  }
+
+  .blog-image {
+    @apply w-full aspect-[16/9] object-cover;
+  }
+
+  .blog-content {
+    @apply p-4;
+  }
+
+  .blog-date {
+    @apply text-sm text-gray-500 mb-2;
+  }
+
+  .blog-title {
+    @apply font-semibold text-lg mb-2 line-clamp-2;
+  }
+
+  .blog-excerpt {
+    @apply text-gray-600 text-sm mb-4 line-clamp-3;
+  }
+
+  .blog-link {
+    @apply text-real-blue font-medium hover:text-real-blue/80 transition-colors;
+  }
+}
