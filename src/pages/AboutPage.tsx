@@ -1,7 +1,15 @@
 
+import SEO from "@/components/SEO";
+
 const AboutPage = () => {
   return (
     <div className="pt-32 pb-20 min-h-screen">
+      <SEO 
+        title="About Azumah Homes - Your Trusted Real Estate Partner Since 2010"
+        description="Learn about Azumah Homes' journey, values, and commitment to helping thousands of families find their dream homes in Ghana. Discover our story of integrity, excellence, and innovation."
+        keywords="about Azumah Homes, real estate company Ghana, property experts, real estate history, trusted agents Ghana"
+        url="https://azumahhomes.vercel.app/about"
+      />
       <div className="container mx-auto px-4">
         <h1 className="text-4xl font-bold mb-6">About Azumah Homes</h1>
         

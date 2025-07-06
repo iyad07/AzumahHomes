@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
+import SEO from "@/components/SEO";
 
 const AgentsPage = () => {
   const [agents, setAgents] = useState([]);
@@ -54,7 +55,13 @@ const AgentsPage = () => {
   }, []);
 
   return (
-    <div className="pt-32 pb-20 min-h-screen bg-gray-50">
+    <div className="pt-32 pb-20 min-h-screen">
+      <SEO 
+        title="Meet Our Expert Real Estate Agents | Azumah Homes"
+        description="Connect with Azumah Homes' professional real estate agents. Our experienced team is ready to help you buy, sell, or rent properties across Ghana."
+        keywords="real estate agents Ghana, property agents, Azumah Homes team, professional realtors Ghana"
+        url="https://azumahhomes.vercel.app/agents"
+      />
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">Meet Our Expert Agents</h1>

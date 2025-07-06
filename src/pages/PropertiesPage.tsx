@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import { supabase, Property } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
+import SEO from "@/components/SEO";
 
 // Add these imports
 import { useAuth } from '@/contexts/AuthContext';
@@ -101,6 +102,12 @@ const PropertiesPage = () => {
 
   return (
     <div className="pt-32 pb-20 min-h-screen">
+      <SEO 
+        title="Properties for Sale & Rent in Ghana | Azumah Homes"
+        description="Browse our extensive collection of properties for sale and rent in Ghana. Find apartments, houses, commercial properties in Accra, Kumasi and other prime locations."
+        keywords="properties for sale Ghana, houses for rent, apartments Ghana, commercial properties, Accra real estate, Kumasi properties"
+        url="https://azumahhomes.vercel.app/properties"
+      />
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
           <div>

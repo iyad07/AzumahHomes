@@ -118,7 +118,7 @@ const Header = () => {
                 shouldUseDarkText ? "text-black" : "text-white"
               )}
             >
-              Luxury Homes
+              Homes
             </div>
           </div>
         </Link>

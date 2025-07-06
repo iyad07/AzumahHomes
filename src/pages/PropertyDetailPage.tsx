@@ -7,6 +7,7 @@ import { supabase, Property } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
+import SEO from "@/components/SEO";
 
 const PropertyDetailPage = () => {
   const { id } = useParams<{ id: string }>();
