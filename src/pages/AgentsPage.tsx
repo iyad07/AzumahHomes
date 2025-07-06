@@ -119,13 +119,13 @@ const AgentsPage = () => {
                   <div className="flex flex-col gap-2 mb-4">
                     <div className="flex items-center text-gray-600">
                       <Mail size={16} className="mr-2" />
-                      <a href={`mailto:${agent.email}`} className="hover:text-blue-600">
+                      <a href={`mailto:${agent.email}`} className="hover:text-real-orange">
                         {agent.email}
                       </a>
                     </div>
                     <div className="flex items-center text-gray-600">
                       <Phone size={16} className="mr-2" />
-                      <a href={`tel:${agent.phone}`} className="hover:text-blue-600">
+                      <a href={`tel:${agent.phone}`} className="hover:text-real-orange">
                         {agent.phone}
                       </a>
                     </div>

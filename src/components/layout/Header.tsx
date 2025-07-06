@@ -22,7 +22,7 @@ const Header = () => {
   
   // Check if we're on the home page
   const isHomePage = pathname === '/';
-  // On non-home pages, always use dark text since background is white
+  // On mobile, always use dark text for visibility. On desktop, use conditional logic
   const shouldUseDarkText = !isHomePage || isScrolled;
 
   // Handle scroll effect for header
@@ -52,7 +52,9 @@ const Header = () => {
   return (
       <header
     className={cn(
-      "fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white/20 backdrop-blur-md",
+      "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+      // Mobile: completely solid background for visibility
+      "lg:bg-white/20 lg:backdrop-blur-md bg-white",
       isScrolled ? "bg-white shadow-md py-3" : "py-5"
     )}
   >
@@ -79,7 +81,7 @@ const Header = () => {
             {user ? (
               <Link
                 to="/dashboard"
-                className="inline-flex items-center gap-2 hover:text-real-blue transition-colors"
+                className="inline-flex items-center gap-2 hover:text-real-orange transition-colors"
               >
                 <User size={16} />
                 <span>Dashboard</span>
@@ -87,7 +89,7 @@ const Header = () => {
             ) : (
               <Link
                 to="/login"
-                className="inline-flex items-center gap-2 hover:text-real-blue transition-colors"
+                className="inline-flex items-center gap-2 hover:text-real-orange transition-colors"
               >
                 <User size={16} />
                 <span>Login / Register</span>
@@ -107,7 +109,9 @@ const Header = () => {
             <div
               className={cn(
                 "text-5xl font-extrabold tracking-tight hover:text-blue-700 transition-colors duration-300 mt-3",
-                shouldUseDarkText ? "text-black" : "text-white"
+                // Always dark on mobile for visibility, conditional on desktop
+                "text-black lg:text-black lg:group-hover:text-blue-700",
+                !shouldUseDarkText && "lg:text-white"
               )}
             >
               Azumah
@@ -115,7 +119,9 @@ const Header = () => {
             <div
               className={cn(
                 "text-md font-medium tracking-wide ml-5 -mt-1",
-                shouldUseDarkText ? "text-black" : "text-white"
+                // Always dark on mobile for visibility, conditional on desktop
+                "text-black",
+                !shouldUseDarkText && "lg:text-white"
               )}
             >
               Homes
@@ -130,7 +136,7 @@ const Header = () => {
               className={({ isActive }) =>
                 cn(
                   "font-medium transition-colors",
-                  isActive ? "text-real-blue" : shouldUseDarkText ? "text-black hover:text-real-blue" : "text-white hover:text-real-blue"
+                  isActive ? "text-real-orange" : shouldUseDarkText ? "text-black hover:text-real-orange" : "text-white hover:text-real-orange"
                 )
               }
             >
@@ -141,7 +147,7 @@ const Header = () => {
               className={({ isActive }) =>
                 cn(
                   "font-medium transition-colors",
-                  isActive ? "text-real-blue" : shouldUseDarkText ? "text-black hover:text-real-blue" : "text-white hover:text-real-blue"
+                  isActive ? "text-real-orange" : shouldUseDarkText ? "text-black hover:text-real-orange" : "text-white hover:text-real-orange"
                 )
               }
             >
@@ -152,7 +158,7 @@ const Header = () => {
               className={({ isActive }) =>
                 cn(
                   "font-medium transition-colors",
-                  isActive ? "text-real-blue" : shouldUseDarkText ? "text-black hover:text-real-blue" : "text-white hover:text-real-blue"
+                  isActive ? "text-real-orange" : shouldUseDarkText ? "text-black hover:text-real-orange" : "text-white hover:text-real-orange"
                 )
               }
             >
@@ -163,7 +169,7 @@ const Header = () => {
               className={({ isActive }) =>
                 cn(
                   "font-medium transition-colors",
-                  isActive ? "text-real-blue" : shouldUseDarkText ? "text-black hover:text-real-blue" : "text-white hover:text-real-blue"
+                  isActive ? "text-real-orange" : shouldUseDarkText ? "text-black hover:text-real-orange" : "text-white hover:text-real-orange"
                 )
               }
             >
@@ -174,7 +180,7 @@ const Header = () => {
               className={({ isActive }) =>
                 cn(
                   "font-medium transition-colors",
-                  isActive ? "text-real-blue" : shouldUseDarkText ? "text-black hover:text-real-blue" : "text-white hover:text-real-blue"
+                  isActive ? "text-real-orange" : shouldUseDarkText ? "text-black hover:text-real-orange" : "text-white hover:text-real-orange"
                 )
               }
             >
@@ -185,7 +191,7 @@ const Header = () => {
               className={({ isActive }) =>
                 cn(
                   "font-medium transition-colors",
-                  isActive ? "text-real-blue" : shouldUseDarkText ? "text-black hover:text-real-blue" : "text-white hover:text-real-blue"
+                  isActive ? "text-real-orange" : shouldUseDarkText ? "text-black hover:text-real-orange" : "text-white hover:text-real-orange"
                 )
               }
             >
@@ -197,7 +203,9 @@ const Header = () => {
             {user && (
               <Link to="/dashboard/favorites" className={cn(
                 "hidden lg:flex items-center gap-1 px-3 py-2",
-                shouldUseDarkText ? "text-black" : "text-white"
+                // Always dark on mobile for visibility, conditional on desktop
+                "text-black",
+                !shouldUseDarkText && "lg:text-white"
               )}>
                 <Heart size={20} />
               </Link>
@@ -212,7 +220,8 @@ const Header = () => {
             <button
               className={cn(
                 "lg:hidden",
-                shouldUseDarkText ? "text-black" : "text-white"
+                // Always dark on mobile for visibility
+                "text-black"
               )}
               onClick={toggleMobileMenu}
               aria-label="Toggle mobile menu"
@@ -232,7 +241,7 @@ const Header = () => {
       >
         <div className="container mx-auto p-5">
           <div className="flex justify-between items-center mb-8">
-            <Link to="/" className="text-2xl font-bold text-real-blue">
+            <Link to="/" className="text-2xl font-bold text-real-orange">
               Azumah Homes
             </Link>
             <button
@@ -250,7 +259,7 @@ const Header = () => {
               className={({ isActive }) =>
                 cn(
                   "text-xl font-medium",
-                  isActive ? "text-real-blue" : "text-gray-800"
+                  isActive ? "text-real-orange" : "text-gray-800"
                 )
               }
               onClick={toggleMobileMenu}
@@ -262,7 +271,7 @@ const Header = () => {
               className={({ isActive }) =>
                 cn(
                   "text-xl font-medium",
-                  isActive ? "text-real-blue" : "text-gray-800"
+                  isActive ? "text-real-orange" : "text-gray-800"
                 )
               }
               onClick={toggleMobileMenu}
@@ -274,7 +283,7 @@ const Header = () => {
               className={({ isActive }) =>
                 cn(
                   "text-xl font-medium",
-                  isActive ? "text-real-blue" : "text-gray-800"
+                  isActive ? "text-real-orange" : "text-gray-800"
                 )
               }
               onClick={toggleMobileMenu}
@@ -286,7 +295,7 @@ const Header = () => {
               className={({ isActive }) =>
                 cn(
                   "text-xl font-medium",
-                  isActive ? "text-real-blue" : "text-gray-800"
+                  isActive ? "text-real-orange" : "text-gray-800"
                 )
               }
               onClick={toggleMobileMenu}
@@ -298,7 +307,7 @@ const Header = () => {
               className={({ isActive }) =>
                 cn(
                   "text-xl font-medium",
-                  isActive ? "text-real-blue" : "text-gray-800"
+                  isActive ? "text-real-orange" : "text-gray-800"
                 )
               }
               onClick={toggleMobileMenu}
@@ -310,7 +319,7 @@ const Header = () => {
               className={({ isActive }) =>
                 cn(
                   "text-xl font-medium",
-                  isActive ? "text-real-blue" : "text-gray-800"
+                  isActive ? "text-real-orange" : "text-gray-800"
                 )
               }
               onClick={toggleMobileMenu}
@@ -322,7 +331,7 @@ const Header = () => {
               className={({ isActive }) =>
                 cn(
                   "text-xl font-medium",
-                  isActive ? "text-real-blue" : "text-gray-800"
+                  isActive ? "text-real-orange" : "text-gray-800"
                 )
               }
               onClick={toggleMobileMenu}
@@ -332,7 +341,7 @@ const Header = () => {
             {isAdmin && (
               <NavLink
                 to="/submit-listing"
-                className="bg-real-blue text-white py-3 px-6 rounded-md text-center"
+                className="bg-real-orange text-white py-3 px-6 rounded-md text-center"
                 onClick={toggleMobileMenu}
               >
                 Add Property
@@ -343,11 +352,11 @@ const Header = () => {
           <div className="mt-10 border-t pt-6">
             <div className="flex flex-col space-y-4">
               <div className="flex items-center gap-2">
-                <Phone size={16} className="text-real-blue" />
+                <Phone size={16} className="text-real-orange" />
                 <span>+1 (234) 567-890</span>
               </div>
               <div className="flex items-center gap-2">
-                <Mail size={16} className="text-real-blue" />
+                <Mail size={16} className="text-real-orange" />
                 <span>info@Azumah Homes.com</span>
               </div>
             </div>

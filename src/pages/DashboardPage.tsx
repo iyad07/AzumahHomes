@@ -64,7 +64,7 @@ const DashboardHome = () => {
       <h2 className="text-2xl font-semibold mb-6">Dashboard Home</h2>
       
       {/* Welcome message with user email */}
-      <div className="bg-blue-50 p-6 rounded-lg mb-8 border border-blue-100">
+      <div className="bg-orange-50 p-6 rounded-lg mb-8 border border-orange-100">
         <h3 className="text-xl font-medium mb-2">Welcome, {profile?.email}</h3>
         <p className="text-gray-600">
           {isAdmin 
@@ -78,8 +78,8 @@ const DashboardHome = () => {
         {isAdmin && (
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
             <div className="flex items-center gap-4">
-              <div className="bg-blue-100 p-3 rounded-full">
-                <Home className="h-6 w-6 text-blue-600" />
+              <div className="bg-orange-100 p-3 rounded-full">
+              <Home className="h-6 w-6 text-real-orange" />
               </div>
               <div>
                 <h4 className="text-lg font-medium">My Properties</h4>
@@ -104,8 +104,8 @@ const DashboardHome = () => {
         {!isAdmin && (
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
             <div className="flex items-center gap-4">
-              <div className="bg-blue-100 p-3 rounded-full">
-                <ShoppingCart className="h-6 w-6 text-blue-600" />
+              <div className="bg-orange-100 p-3 rounded-full">
+              <ShoppingCart className="h-6 w-6 text-real-orange" />
               </div>
               <div>
                 <h4 className="text-lg font-medium">Cart Items</h4>
@@ -133,7 +133,7 @@ const DashboardHome = () => {
         <div className="mb-8">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-medium">My Recent Properties</h3>
-            <Link to="/dashboard/listings" className="text-blue-600 hover:text-blue-800 text-sm font-medium">View All</Link>
+            <Link to="/dashboard/listings" className="text-real-orange hover:text-orange-600 text-sm font-medium">View All</Link>
           </div>
           
           {loading ? (
@@ -143,7 +143,7 @@ const DashboardHome = () => {
           ) : properties.length === 0 ? (
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 text-center">
               <p>You haven't added any properties yet.</p>
-              <Link to="/submit-listing" className="text-blue-600 hover:text-blue-800 mt-2 inline-block">Add your first property</Link>
+              <Link to="/submit-listing" className="text-real-orange hover:text-orange-600 mt-2 inline-block">Add your first property</Link>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -161,8 +161,8 @@ const DashboardHome = () => {
                       {property.location}
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-blue-600 font-medium">{formatPrice(property.price)}</span>
-                      <Link to={`/properties/${property.id}`} className="text-sm text-blue-600 hover:text-blue-800">View Details</Link>
+                      <span className="text-real-orange font-medium">{formatPrice(property.price)}</span>
+                      <Link to={`/properties/${property.id}`} className="text-sm text-real-orange hover:text-orange-600">View Details</Link>
                     </div>
                   </div>
                 </div>
@@ -177,13 +177,13 @@ const DashboardHome = () => {
         <div className="mb-8">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-medium">My Cart</h3>
-            <Link to="/dashboard/cart" className="text-blue-600 hover:text-blue-800 text-sm font-medium">View All</Link>
+            <Link to="/dashboard/cart" className="text-real-orange hover:text-orange-600 text-sm font-medium">View All</Link>
           </div>
           
           {!cartItems || cartItems.length === 0 ? (
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 text-center">
               <p>Your cart is empty.</p>
-              <Link to="/properties" className="text-blue-600 hover:text-blue-800 mt-2 inline-block">Browse properties</Link>
+              <Link to="/properties" className="text-real-orange hover:text-orange-600 mt-2 inline-block">Browse properties</Link>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -201,8 +201,8 @@ const DashboardHome = () => {
                       {item.property.location}
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-blue-600 font-medium">{formatPrice(item.property.price)}</span>
-                      <Link to={`/properties/${item.property.id}`} className="text-sm text-blue-600 hover:text-blue-800">View Details</Link>
+                      <span className="text-real-orange font-medium">{formatPrice(item.property.price)}</span>
+                      <Link to={`/properties/${item.property.id}`} className="text-sm text-real-orange hover:text-orange-600">View Details</Link>
                     </div>
                   </div>
                 </div>
@@ -217,13 +217,13 @@ const DashboardHome = () => {
         <h3 className="text-xl font-medium mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {isAdmin ? (
-            <Link to="/submit-listing" className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 hover:border-blue-300 transition-colors text-center">
-              <Home className="h-6 w-6 mx-auto mb-2 text-blue-600" />
+            <Link to="/submit-listing" className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 hover:border-orange-300 transition-colors text-center">
+            <Home className="h-6 w-6 mx-auto mb-2 text-real-orange" />
               <span className="font-medium">Add New Property</span>
             </Link>
           ) : (
-            <Link to="/dashboard/cart" className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 hover:border-blue-300 transition-colors text-center">
-              <ShoppingCart className="h-6 w-6 mx-auto mb-2 text-blue-600" />
+            <Link to="/dashboard/cart" className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 hover:border-orange-300 transition-colors text-center">
+            <ShoppingCart className="h-6 w-6 mx-auto mb-2 text-real-orange" />
               <span className="font-medium">View Cart {cartItems?.length > 0 && `(${cartItems.length})`}</span>
             </Link>
           )}
@@ -326,7 +326,7 @@ const MyListings = () => {
         <h2 className="text-2xl font-semibold">My Listings</h2>
         <Link 
           to="/submit-listing" 
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+          className="bg-real-orange hover:bg-orange-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
         >
           Add New Property
         </Link>
@@ -342,7 +342,7 @@ const MyListings = () => {
           <p className="text-gray-600 mb-4">You haven't added any properties to your listings yet.</p>
           <Link 
             to="/submit-listing" 
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+            className="bg-real-orange hover:bg-orange-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
           >
             Add Your First Property
           </Link>
@@ -377,7 +377,7 @@ const MyListings = () => {
                 <div className="flex justify-between items-center">
                   <div>
                     <div className="text-sm text-gray-500">Price</div>
-                    <div className="font-medium text-blue-600">{formatPrice(property.price)}</div>
+                    <div className="font-medium text-real-orange">{formatPrice(property.price)}</div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-500">Status</div>
@@ -389,7 +389,7 @@ const MyListings = () => {
                 <div className="flex space-x-2">
                   <Link 
                     to={`/properties/${property.id}`} 
-                    className="text-blue-600 hover:text-blue-800 text-sm font-medium px-3 py-1 border border-blue-200 rounded-md hover:bg-blue-50 transition-colors flex-1 text-center"
+                    className="text-real-orange hover:text-orange-600 text-sm font-medium px-3 py-1 border border-orange-200 rounded-md hover:bg-orange-50 transition-colors flex-1 text-center"
                   >
                     View
                   </Link>
@@ -423,7 +423,7 @@ const MyListings = () => {
                   </div>
                 </div>
               </div>
-              <div className="col-span-2 hidden md:block font-medium text-blue-600">
+              <div className="col-span-2 hidden md:block font-medium text-real-orange">
                 {formatPrice(property.price)}
               </div>
               <div className="col-span-2 hidden md:block">
@@ -434,7 +434,7 @@ const MyListings = () => {
               <div className="col-span-3 hidden md:flex space-x-2">
                 <Link 
                   to={`/properties/${property.id}`} 
-                  className="text-blue-600 hover:text-blue-800 text-sm font-medium px-3 py-1 border border-blue-200 rounded-md hover:bg-blue-50 transition-colors"
+                  className="text-real-orange hover:text-orange-600 text-sm font-medium px-3 py-1 border border-orange-200 rounded-md hover:bg-orange-50 transition-colors"
                 >
                   View
                 </Link>
@@ -547,7 +547,7 @@ const Favorites = () => {
       
       {loading ? (
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-real-blue"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-real-orange"></div>
         </div>
       ) : favorites.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg">
@@ -555,7 +555,7 @@ const Favorites = () => {
           <h3 className="text-lg font-medium text-gray-900 mb-2">No Favorites Yet</h3>
           <p className="text-gray-500 mb-6">You haven't added any properties to your favorites yet.</p>
           <Link to="/properties">
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">Browse Properties</button>
+            <button className="bg-real-orange hover:bg-orange-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">Browse Properties</button>
           </Link>
         </div>
       ) : (
@@ -749,7 +749,7 @@ const ProfileSettings = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-real-blue"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-real-orange"></div>
       </div>
     );
   }
@@ -827,7 +827,7 @@ const ProfileSettings = () => {
           <button
             type="submit"
             disabled={updating}
-            className={`px-6 py-2 bg-real-blue text-white rounded-md hover:bg-blue-700 transition-colors ${updating ? 'opacity-70 cursor-not-allowed' : ''}`}
+            className={`px-6 py-2 bg-real-orange text-white rounded-md hover:bg-orange-600 transition-colors ${updating ? 'opacity-70 cursor-not-allowed' : ''}`}
           >
             {updating ? 'Saving...' : 'Save Changes'}
           </button>
@@ -926,7 +926,7 @@ const Cart = () => {
       
       {loading ? (
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-real-blue"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-real-orange"></div>
         </div>
       ) : cartItems.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg">
@@ -934,7 +934,7 @@ const Cart = () => {
           <h3 className="text-lg font-medium text-gray-900 mb-2">Your Cart is Empty</h3>
           <p className="text-gray-500 mb-6">You haven't added any properties to your cart yet.</p>
           <Link to="/properties">
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">Browse Properties</button>
+            <button className="bg-real-orange hover:bg-orange-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">Browse Properties</button>
           </Link>
         </div>
       ) : (

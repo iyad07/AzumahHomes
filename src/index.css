@@ -130,7 +130,7 @@
   }
 
   .category-icon {
-    @apply mb-4 p-4 rounded-full bg-blue-50 text-real-blue;
+    @apply mb-4 p-4 rounded-full bg-orange-50 text-real-orange;
   }
 
   .location-card {
@@ -178,7 +178,7 @@
   }
 
   .social-icon {
-    @apply p-2 rounded-full bg-white text-gray-800 hover:bg-real-blue hover:text-white transition-colors duration-200;
+    @apply p-2 rounded-full bg-white text-gray-800 hover:bg-real-orange hover:text-white transition-colors duration-200;
   }
 
   .agent-details {

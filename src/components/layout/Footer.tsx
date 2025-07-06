@@ -21,7 +21,7 @@ const Footer = () => {
                 href="https://facebook.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="bg-gray-800 p-2 rounded-full hover:bg-real-blue transition-colors"
+                className="bg-gray-800 p-2 rounded-full hover:bg-real-orange transition-colors"
               >
                 <Facebook size={18} />
               </a>
@@ -29,7 +29,7 @@ const Footer = () => {
                 href="https://twitter.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="bg-gray-800 p-2 rounded-full hover:bg-real-blue transition-colors"
+                className="bg-gray-800 p-2 rounded-full hover:bg-real-orange transition-colors"
               >
                 <Twitter size={18} />
               </a>

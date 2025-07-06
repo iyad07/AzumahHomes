@@ -149,13 +149,13 @@ const AgentDetailPage = () => {
                 </div>
                 <div className="flex items-center text-gray-600">
                   <Mail className="h-5 w-5 mr-2" />
-                  <a href={`mailto:${agent.email}`} className="hover:text-blue-600">
+                  <a href={`mailto:${agent.email}`} className="hover:text-real-orange">
                     {agent.email}
                   </a>
                 </div>
                 <div className="flex items-center text-gray-600">
                   <Phone className="h-5 w-5 mr-2" />
-                  <a href={`tel:${agent.phone}`} className="hover:text-blue-600">
+                  <a href={`tel:${agent.phone}`} className="hover:text-real-orange">
                     {agent.phone}
                   </a>
                 </div>

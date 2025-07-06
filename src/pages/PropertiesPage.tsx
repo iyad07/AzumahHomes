@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { Bed, Bath, Maximize, Star, MapPin } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -14,8 +15,6 @@ import { ChevronDown } from "lucide-react";
 import { supabase, Property } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import SEO from "@/components/SEO";
-
-// Add these imports
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { ShoppingCart } from 'lucide-react';
@@ -24,9 +23,9 @@ const PropertiesPage = () => {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  // Add these hooks at the component level
   const { user, isAdmin } = useAuth();
   const { addToCart, isInCart } = useCart();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -78,14 +77,65 @@ const PropertiesPage = () => {
 
   const currentSortLabel = sortOptions.find(option => option.value === sortBy)?.label || 'Sort By';
 
-  const sortedAndFilteredProperties = [...properties]
+  const [filters, setFilters] = useState({
+    location: '',
+    tag: '',
+    minPrice: null as number | null,
+    maxPrice: null as number | null
+  });
+  
+  useEffect(() => {
+    const location = searchParams.get('location');
+    const category = searchParams.get('category');
+    const minPrice = searchParams.get('minPrice');
+    const maxPrice = searchParams.get('maxPrice');
+
+    setFilters({
+      location: location || '',
+      tag: category || '',
+      minPrice: minPrice ? parseInt(minPrice) : null,
+      maxPrice: maxPrice ? parseInt(maxPrice) : null,
+    });
+  }, [searchParams]);
+  
+  const clearFilters = () => {
+    setFilters({ location: '', tag: '', minPrice: null, maxPrice: null });
+    setSearchQuery('');
+    window.history.pushState({}, '', '/properties');
+  };
+
+  const sortedAndFilteredProperties = properties
     .filter(property => {
-      if (!searchQuery) return true;
-      const searchLower = searchQuery.toLowerCase();
-      return (
-        property.title.toLowerCase().includes(searchLower) ||
-        property.location.toLowerCase().includes(searchLower)
-      );
+      // Text search filter
+      if (searchQuery) {
+        const searchLower = searchQuery.toLowerCase();
+        const matchesSearch = (
+          property.title.toLowerCase().includes(searchLower) ||
+          property.location.toLowerCase().includes(searchLower)
+        );
+        if (!matchesSearch) return false;
+      }
+      
+      // Location filter
+      if (filters.location && property.location !== filters.location) {
+        return false;
+      }
+      
+      // Tag filter
+      if (filters.tag && property.tag !== filters.tag) {
+        return false;
+      }
+      
+      // Price range filter
+      if (filters.minPrice && property.price < filters.minPrice) {
+        return false;
+      }
+      
+      if (filters.maxPrice && property.price > filters.maxPrice) {
+        return false;
+      }
+      
+      return true;
     })
     .sort((a, b) => {
       switch (sortBy) {
@@ -94,7 +144,7 @@ const PropertiesPage = () => {
         case 'price-desc':
           return b.price - a.price;
         case 'date':
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+          return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime();
         default:
           return 0;
       }
@@ -113,6 +163,39 @@ const PropertiesPage = () => {
           <div>
             <h1 className="text-4xl font-bold mb-2">Properties</h1>
             <p className="text-gray-600">Find your perfect property from our listings</p>
+            
+            {/* Show active filters */}
+            {(filters.location || filters.tag || filters.minPrice || filters.maxPrice) && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                <span className="text-sm text-gray-600">Active filters:</span>
+                {filters.location && (
+                  <span className="bg-real-blue text-white px-2 py-1 rounded text-sm">
+                    Location: {filters.location}
+                  </span>
+                )}
+                {filters.tag && (
+                  <span className="bg-real-orange text-white px-2 py-1 rounded text-sm">
+                    Type: {filters.tag}
+                  </span>
+                )}
+                {filters.minPrice && (
+                  <span className="bg-real-blue text-white px-2 py-1 rounded text-sm">
+                    Min: {formatPrice(filters.minPrice)}
+                  </span>
+                )}
+                {filters.maxPrice && (
+                  <span className="bg-real-blue text-white px-2 py-1 rounded text-sm">
+                    Max: {formatPrice(filters.maxPrice)}
+                  </span>
+                )}
+                <button
+                  onClick={clearFilters}
+                  className="bg-gray-500 text-white px-2 py-1 rounded text-sm hover:bg-gray-600"
+                >
+                  Clear All
+                </button>
+              </div>
+            )}
           </div>
           <div className="flex gap-4">
             <DropdownMenu>
@@ -165,7 +248,7 @@ const PropertiesPage = () => {
                         e.stopPropagation();
                         addToCart(property.id);
                       }}
-                      className={`p-2 rounded-full shadow ${isInCart(property.id) ? 'bg-real-blue text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+                      className={`p-2 rounded-full shadow ${isInCart(property.id) ? 'bg-real-orange text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
                       aria-label="Add to cart"
                     >
                       <ShoppingCart size={16} />
@@ -179,9 +262,9 @@ const PropertiesPage = () => {
                     alt={property.title}
                     className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-300"
                   />
-                  <div className="absolute top-4 left-4 bg-real-blue text-white py-1 px-3 rounded-full text-sm">
-                    {property.tag}
-                  </div>
+                  <div className="absolute top-4 left-4 bg-real-orange text-white py-1 px-3 rounded-full text-sm">
+              {property.tag}
+            </div>
                   {property.isPopular && (
                     <div className="absolute top-4 right-4 bg-real-orange text-white py-1 px-3 rounded-full text-sm">
                       Popular
@@ -240,7 +323,7 @@ const PropertiesPage = () => {
                         e.stopPropagation();
                         addToCart(property.id);
                       }}
-                      className={`w-full py-2 rounded-md transition-colors ${isInCart(property.id) ? 'bg-gray-200 text-gray-700' : 'bg-real-blue text-white hover:bg-blue-700'}`}
+                      className={`w-full py-2 rounded-md transition-colors ${isInCart(property.id) ? 'bg-gray-200 text-gray-700' : 'bg-real-orange text-white hover:bg-orange-600'}`}
                       disabled={isInCart(property.id)}
                     >
                       {isInCart(property.id) ? 'Added to Cart' : 'Add to Cart'}

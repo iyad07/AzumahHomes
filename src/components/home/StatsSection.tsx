@@ -49,7 +49,7 @@ const StatItem = ({ icon, value, label, suffix }: StatItemProps) => {
 
   return (
     <div ref={elementRef} className="text-center p-8 flex flex-col items-center animate-counter-animation">
-      <div className="bg-blue-50 p-4 rounded-full mb-4 text-real-blue">
+      <div className="bg-orange-50 p-4 rounded-full mb-4 text-real-orange">
         {icon}
       </div>
       <h3 className="text-4xl font-bold mb-2">

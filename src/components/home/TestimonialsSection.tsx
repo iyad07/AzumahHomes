@@ -141,7 +141,7 @@ const TestimonialsSection = () => {
                 className={cn(
                   "w-3 h-3 rounded-full transition-colors",
                   currentIndex === index * itemsPerPage
-                    ? "bg-real-blue"
+                    ? "bg-real-orange"
                     : "bg-gray-300"
                 )}
                 aria-label={`Go to page ${index + 1}`}

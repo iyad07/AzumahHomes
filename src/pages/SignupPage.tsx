@@ -122,7 +122,7 @@ const SignupPage = () => {
               {isLoading ? 'Creating account...' : 'Sign Up'}
             </Button>
             <p className="text-sm text-center text-gray-500">
-              Already have an account? <Link to="/login" className="text-blue-600 hover:underline">Sign in</Link>
+              Already have an account? <Link to="/login" className="text-real-orange hover:underline">Sign in</Link>
             </p>
           </CardFooter>
         </form>

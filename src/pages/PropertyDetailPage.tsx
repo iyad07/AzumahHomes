@@ -115,7 +115,7 @@ const PropertyDetailPage = () => {
               alt={property.title}
               className="w-full h-[300px] md:h-[500px] object-cover rounded-lg"
             />
-            <div className="absolute top-4 left-4 bg-real-blue text-white py-1 px-3 rounded-full text-xs md:text-sm">
+            <div className="absolute top-4 left-4 bg-real-orange text-white py-1 px-3 rounded-full text-xs md:text-sm">
               {property.tag}
             </div>
             {property.isPopular && (
@@ -170,7 +170,7 @@ const PropertyDetailPage = () => {
             <div className="flex flex-col md:flex-row gap-4 mt-6">
               <Link 
                 to={`/agents/${property.user_id}`} 
-                className="flex-1 bg-real-blue text-white py-2 md:py-3 px-4 md:px-6 rounded-md hover:bg-blue-700 transition-colors text-center font-medium text-sm md:text-base"
+                className="flex-1 bg-real-orange text-white py-2 md:py-3 px-4 md:px-6 rounded-md hover:bg-orange-600 transition-colors text-center font-medium text-sm md:text-base"
               >
                 Contact Agent
               </Link>
@@ -179,7 +179,7 @@ const PropertyDetailPage = () => {
                 <button 
                   onClick={handleAddToCart}
                   disabled={property && isInCart(property.id)}
-                  className={`flex-1 py-2 md:py-3 px-4 md:px-6 rounded-md transition-colors text-center font-medium text-sm md:text-base ${property && isInCart(property.id) ? 'bg-gray-200 text-gray-700' : 'bg-white border border-real-blue text-real-blue hover:bg-blue-50'}`}
+                  className={`flex-1 py-2 md:py-3 px-4 md:px-6 rounded-md transition-colors text-center font-medium text-sm md:text-base ${property && isInCart(property.id) ? 'bg-gray-200 text-gray-700' : 'bg-white border border-real-orange text-real-orange hover:bg-orange-50'}`}
                 >
                   <ShoppingCart className="inline-block mr-2" size={16} />
                   {property && isInCart(property.id) ? 'Added to Cart' : 'Add to Cart'}

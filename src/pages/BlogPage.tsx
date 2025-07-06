@@ -74,9 +74,9 @@ const BlogPage = () => {
                   alt={post.title}
                   className="w-full h-48 object-cover"
                 />
-                <div className="absolute top-4 left-4 bg-blue-600 text-white py-1 px-3 rounded-full text-sm">
-                  {post.category}
-                </div>
+                <div className="absolute top-4 left-4 bg-real-orange text-white py-1 px-3 rounded-full text-sm">
+              {post.category}
+            </div>
               </div>
 
               <div className="p-6">
@@ -102,7 +102,7 @@ const BlogPage = () => {
 
                 <Link 
                   to={`/blog/${post.id}`}
-                  className="inline-flex items-center text-blue-600 hover:text-blue-700"
+                  className="inline-flex items-center text-real-orange hover:text-orange-600"
                 >
                   Read More
                   <ChevronRight size={16} className="ml-1" />

@@ -214,7 +214,7 @@ const FeaturedProperties = () => {
                     alt={property.title}
                     className="property-image"
                   />
-                  <div className="property-badge bg-real-blue text-white">
+                  <div className="property-badge bg-real-orange text-white">
                     {property.tag}
                   </div>
                   {property.isPopular && (
@@ -287,7 +287,7 @@ const FeaturedProperties = () => {
                   className={cn(
                     "w-3 h-3 rounded-full transition-colors",
                     currentIndex === index * itemsPerPage
-                      ? "bg-real-blue"
+                      ? "bg-real-orange"
                       : "bg-gray-300"
                   )}
                   aria-label={`Go to page ${index + 1}`}
