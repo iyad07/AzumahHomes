@@ -233,7 +233,7 @@ const Header = () => {
         <div className="container mx-auto p-5">
           <div className="flex justify-between items-center mb-8">
             <Link to="/" className="text-2xl font-bold text-real-blue">
-              Homirx
+              Azumah Homes
             </Link>
             <button
               onClick={toggleMobileMenu}
@@ -348,7 +348,7 @@ const Header = () => {
               </div>
               <div className="flex items-center gap-2">
                 <Mail size={16} className="text-real-blue" />
-                <span>info@homirx.com</span>
+                <span>info@Azumah Homes.com</span>
               </div>
             </div>
           </div>

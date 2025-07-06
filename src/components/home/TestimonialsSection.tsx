@@ -18,7 +18,7 @@ const testimonials: Testimonial[] = [
     name: "Robert Wilson",
     position: "Home Buyer",
     image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80",
-    content: "Working with Homirx was an absolute pleasure. Their team made finding my dream home a seamless experience. The attention to detail and personalized service exceeded my expectations.",
+    content: "Working with Azumah Homes was an absolute pleasure. Their team made finding my dream home a seamless experience. The attention to detail and personalized service exceeded my expectations.",
     rating: 5,
   },
   {
@@ -26,7 +26,7 @@ const testimonials: Testimonial[] = [
     name: "Jessica Martinez",
     position: "Property Seller",
     image: "https://images.unsplash.com/photo-1614644147724-2d4785d69962?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=764&q=80",
-    content: "The team at Homirx helped me sell my property quickly and at a great price. Their market knowledge and negotiation skills are top-notch. I highly recommend their services.",
+    content: "The team at Azumah Homes helped me sell my property quickly and at a great price. Their market knowledge and negotiation skills are top-notch. I highly recommend their services.",
     rating: 5,
   },
   {
@@ -34,7 +34,7 @@ const testimonials: Testimonial[] = [
     name: "David Thompson",
     position: "Apartment Renter",
     image: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80",
-    content: "Finding a rental apartment in the city was made easy with Homirx. They understood my requirements and showed me options that perfectly matched my needs and budget.",
+    content: "Finding a rental apartment in the city was made easy with Azumah Homes. They understood my requirements and showed me options that perfectly matched my needs and budget.",
     rating: 4,
   },
   {
@@ -42,7 +42,7 @@ const testimonials: Testimonial[] = [
     name: "Amanda Lee",
     position: "First-time Buyer",
     image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=688&q=80",
-    content: "As a first-time homebuyer, I had countless questions. The Homirx team was patient, informative, and guided me through every step of the process. I couldn't be happier with my new home.",
+    content: "As a first-time homebuyer, I had countless questions. The Azumah Homes team was patient, informative, and guided me through every step of the process. I couldn't be happier with my new home.",
     rating: 5,
   },
 ];

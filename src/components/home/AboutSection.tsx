@@ -35,7 +35,7 @@ const AboutSection = () => {
               Real Estate Solutions Made Easy
             </h2>
             <p className="text-gray-600 text-lg mb-6">
-              At Homirx, we believe that finding your perfect property should be a
+              At Azumah Homes, we believe that finding your perfect property should be a
               joyful experience. Our team of dedicated professionals is committed to
               making your real estate journey seamless and successful.
             </p>

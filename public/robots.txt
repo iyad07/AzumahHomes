@@ -13,4 +13,22 @@ Allow: /
 User-agent: *
 Allow: /
 
+# Disallow admin and private areas
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /api/
+
+# Allow important pages
+Allow: /properties
+Allow: /agents
+Allow: /about
+Allow: /contact
+Allow: /blog
+
+# Sitemap location
+Sitemap: https://azumahhomes.vercel.app/sitemap.xml
+
+# Crawl delay
+Crawl-delay: 1
+
 Sitemap: https://Azumahhhomes.com/sitemap.xml

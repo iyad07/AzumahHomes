@@ -118,8 +118,8 @@ const Footer = () => {
               </li>
               <li className="flex items-center gap-3">
                 <Mail size={20} className="text-real-blue" />
-                <a href="mailto:info@homirx.com" className="text-gray-400 hover:text-white transition-colors">
-                  info@homirx.com
+                <a href="mailto:info@Azumah Homes.com" className="text-gray-400 hover:text-white transition-colors">
+                  info@Azumah Homes.com
                 </a>
               </li>
             </ul>
@@ -130,7 +130,7 @@ const Footer = () => {
         <div className="border-t border-gray-800 pt-6 mt-6">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-500 text-sm">
-              &copy; {currentYear} Homirx. All Rights Reserved.
+              &copy; {currentYear} Azumah Homes. All Rights Reserved.
             </p>
             <div className="flex gap-4 mt-4 md:mt-0">
               <Link to="/privacy-policy" className="text-gray-500 hover:text-white text-sm transition-colors">
