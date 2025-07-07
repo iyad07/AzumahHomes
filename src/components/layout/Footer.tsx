@@ -82,21 +82,6 @@ const Footer = () => {
                   Houses
                 </Link>
               </li>
-              <li>
-                <Link to="/properties?type=villa" className="text-gray-400 hover:text-white transition-colors">
-                  Villas
-                </Link>
-              </li>
-              <li>
-                <Link to="/properties?type=office" className="text-gray-400 hover:text-white transition-colors">
-                  Office
-                </Link>
-              </li>
-              <li>
-                <Link to="/properties?type=studio" className="text-gray-400 hover:text-white transition-colors">
-                  Studio
-                </Link>
-              </li>
             </ul>
           </div>
 

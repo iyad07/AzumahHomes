@@ -1,5 +1,6 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { Search, MapPin, Home, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -11,9 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search } from "lucide-react";
-import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
+import { PropertyType, PropertyCategory } from "@/types/property";
+import { usePropertyStats } from "@/hooks/useProperties";
 
 const HeroSection = () => {
   const [priceRange, setPriceRange] = useState([50000, 800000]);
@@ -24,50 +25,8 @@ const HeroSection = () => {
     category: "",
     location: ""
   });
+  usePropertyStats();
   const navigate = useNavigate();
-  
-  useEffect(() => {
-    // Fetch unique locations from properties table
-    const fetchLocations = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('properties')
-          .select('location');
-        
-        if (error) throw error;
-        
-        if (data) {
-          // Extract unique locations
-          const uniqueLocations = Array.from(new Set(data.map(item => item.location)));
-          setLocations(uniqueLocations);
-        }
-      } catch (error) {
-        console.error('Error fetching locations:', error);
-      }
-    };
-    
-    // Fetch unique categories (property types) from properties table
-    const fetchCategories = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('properties')
-          .select('tag');
-        
-        if (error) throw error;
-        
-        if (data) {
-          // Extract unique categories
-          const uniqueCategories = Array.from(new Set(data.map(item => item.tag)));
-          setCategories(uniqueCategories);
-        }
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-      }
-    };
-    
-    fetchLocations();
-    fetchCategories();
-  }, []);
   
   const formatPrice = (value: number) => {
     return `$${value.toLocaleString()}`;
@@ -115,7 +74,7 @@ const HeroSection = () => {
           <Tabs defaultValue="general" className="bg-white/50 backdrop-blur-md p-1 rounded-full shadow-lg">
             <TabsList className="grid-row grid-cols-3 gap-1 bg-transparent">
               <TabsTrigger value="general" className="px-6 py-2 text-white data-[state=active]:bg-orange-500 rounded-full">General</TabsTrigger>
-              <TabsTrigger value="villa" className="px-6 py-2 text-white data-[state=active]:bg-orange-500 rounded-full">Villa</TabsTrigger>
+              <TabsTrigger value="house" className="px-6 py-2 text-white data-[state=active]:bg-orange-500 rounded-full">House</TabsTrigger>
               <TabsTrigger value="apartment" className="px-6 py-2 text-white data-[state=active]:bg-orange-500 rounded-full">Apartment</TabsTrigger>
             </TabsList>
           </Tabs>
@@ -141,9 +100,8 @@ const HeroSection = () => {
                   ))
                 ) : (
                   <>
-                    <SelectItem value="apartment">Apartment</SelectItem>
-                    <SelectItem value="villa">Villa</SelectItem>
-                    <SelectItem value="house">House</SelectItem>
+                    <SelectItem value={PropertyType.APARTMENT}>Apartment</SelectItem>
+                    <SelectItem value={PropertyType.HOUSE}>House</SelectItem>
                   </>
                 )}
               </SelectContent>

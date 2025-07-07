@@ -1,8 +1,8 @@
 
 import { useState, useEffect } from "react";
-import { Home, Building2, Building, Warehouse, Hotel, Car } from "lucide-react";
+import { Home, Building2 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { supabase } from "@/lib/supabase";
+import { useProperties } from "@/hooks/useProperties";
 
 interface Category {
   name: string;
@@ -12,79 +12,48 @@ interface Category {
 }
 
 const CategorySection = () => {
-  const [categories, setCategories] = useState<Category[]>([
+  const { typeCounts, loading } = useProperties();
+  
+  const categories: Category[] = [
     {
       name: "Apartment",
-      count: 0,
+      count: typeCounts.apartment || 0,
       icon: <Building2 size={40} className="text-real-blue" />,
-      link: "/properties?category=apartment",
+      link: "/properties?type=apartment",
     },
     {
       name: "House",
-      count: 0,
+      count: typeCounts.house || 0,
       icon: <Home size={40} className="text-real-blue" />,
-      link: "/properties?category=house",
+      link: "/properties?type=house",
     },
-    {
-      name: "Office",
-      count: 0,
-      icon: <Building size={40} className="text-real-blue" />,
-      link: "/properties?category=office",
-    },
-    {
-      name: "Villa",
-      count: 0,
-      icon: <Hotel size={40} className="text-real-blue" />,
-      link: "/properties?category=villa",
-    },
-    {
-      name: "Studio",
-      count: 0,
-      icon: <Warehouse size={40} className="text-real-blue" />,
-      link: "/properties?category=studio",
-    },
-    {
-      name: "Garage",
-      count: 0,
-      icon: <Car size={40} className="text-real-blue" />,
-      link: "/properties?category=garage",
-    },
-  ]);
+  ];
 
-  useEffect(() => {
-    const fetchCategoryCounts = async () => {
-      try {
-        // Get all properties
-        const { data, error } = await supabase
-          .from('properties')
-          .select('tag');
-        
-        if (error) throw error;
-        
-        if (data) {
-          // Count properties by category
-          const counts: Record<string, number> = {};
-          
-          data.forEach(property => {
-            const tag = property.tag.toLowerCase();
-            counts[tag] = (counts[tag] || 0) + 1;
-          });
-          
-          // Update categories with real counts
-          setCategories(prev => 
-            prev.map(category => ({
-              ...category,
-              count: counts[category.name.toLowerCase()] || 0
-            }))
-          );
-        }
-      } catch (error) {
-        console.error('Error fetching category counts:', error);
-      }
-    };
-    
-    fetchCategoryCounts();
-  }, []);
+  if (loading) {
+    return (
+      <section className="py-20 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="section-title">Explore by Category</h2>
+            <p className="section-subtitle mx-auto">
+              Find your perfect property from our wide range of options across different categories
+            </p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-6">
+            {[1, 2].map((i) => (
+              <div key={i} className="category-card animate-pulse">
+                <div className="category-icon">
+                  <div className="w-10 h-10 bg-gray-300 rounded"></div>
+                </div>
+                <div className="h-6 bg-gray-300 rounded mb-1"></div>
+                <div className="h-4 bg-gray-300 rounded w-20"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-20 bg-gray-50">
@@ -96,7 +65,7 @@ const CategorySection = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-6">
           {categories.map((category) => (
             <Link
               to={category.link}

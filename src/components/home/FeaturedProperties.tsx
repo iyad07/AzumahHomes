@@ -1,10 +1,16 @@
 
-import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Bed, Bath, Maximize, Star, ArrowLeft, ArrowRight, MapPin } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { supabase, Property } from "@/lib/supabase";
+import { MapPin, Bed, Bath, Square, Star, ShoppingCart, ArrowLeft, ArrowRight, Maximize } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
+import { useProperties } from "@/hooks/useProperties";
+import { formatPrice } from "@/utils/paymentCalculations";
+import { PropertyCategory } from "@/types/property";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 // Sample property data
 const properties = [
@@ -95,43 +101,14 @@ const properties = [
 ];
 
 const FeaturedProperties = () => {
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const { filteredProperties: properties, loading } = useProperties({ 
+    featured: true, 
+    limit: 6 
+  });
+  const { addToCart, isInCart } = useCart();
   const { toast } = useToast();
+  const [currentIndex, setCurrentIndex] = useState(0);
   const itemsPerPage = 3;
-
-  useEffect(() => {
-    const fetchProperties = async () => {
-      try {
-        setLoading(true);
-        const { data, error } = await supabase
-          .from('properties')
-          .select('*')
-          .order('rating', { ascending: false }) // Get highest rated properties first
-          .limit(6); // Limit to 6 featured properties
-
-        if (error) {
-          throw error;
-        }
-
-        if (data) {
-          setProperties(data);
-        }
-      } catch (error) {
-        console.error('Error fetching properties:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to load featured properties. Please try again later.',
-          variant: 'destructive',
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProperties();
-  }, [toast]);
 
   const totalPages = Math.ceil(properties.length / itemsPerPage);
 
@@ -156,14 +133,7 @@ const FeaturedProperties = () => {
     currentIndex + itemsPerPage
   );
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
+
 
   return (
     <section className="py-20">
@@ -236,9 +206,16 @@ const FeaturedProperties = () => {
                 <div className="property-details">
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="property-title">{property.title}</h3>
-                    <span className="text-real-blue font-semibold">
-                      {formatPrice(property.price)}
-                    </span>
+                    <div className="text-right">
+                      <span className="text-real-blue font-semibold block">
+                        {formatPrice(property.price)}
+                      </span>
+                      {property.tag === PropertyCategory.FOR_SALE && (
+                        <span className="text-green-600 text-sm font-medium">
+                          50% accepted {formatPrice(property.price / 2)}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   
                   <div className="property-location">

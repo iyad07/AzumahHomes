@@ -1,73 +1,75 @@
-import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Link } from 'react-router-dom';
-import { Bed, Bath, Maximize, Star, MapPin } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { Search, Filter, MapPin, Bed, Bath, Square, Heart, ShoppingCart, ChevronDown, Maximize, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ChevronDown } from "lucide-react";
-import { supabase, Property } from '@/lib/supabase';
-import { useToast } from '@/hooks/use-toast';
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
+import { Property } from "@/lib/supabase";
+import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { useProperties } from "@/hooks/useProperties";
+import { formatPrice } from "@/utils/paymentCalculations";
+import { PropertyCategory } from "@/types/property";
 import SEO from "@/components/SEO";
-import { useAuth } from '@/contexts/AuthContext';
-import { useCart } from '@/contexts/CartContext';
-import { ShoppingCart } from 'lucide-react';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@radix-ui/react-dropdown-menu";
 
 const PropertiesPage = () => {
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
-  const { user, isAdmin } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
   const { addToCart, isInCart } = useCart();
-  const [searchParams] = useSearchParams();
+  const { user, isAdmin } = useAuth();
+  const { toast } = useToast();
+
+  // Get filter values from URL params
+  const category = searchParams.get('category');
+  const type = searchParams.get('type');
+  
+  const [filters, setFilters] = useState({
+    tag: category || '',
+    type: type || '',
+    minPrice: '',
+    maxPrice: '',
+    beds: '',
+    baths: ''
+  });
+
+  // Use the custom hook for properties
+  const { 
+    properties, 
+    filteredProperties: hookFilteredProperties, 
+    loading, 
+    searchProperties 
+  } = useProperties({
+    searchTerm,
+    type: filters.type,
+    category: filters.tag,
+    minPrice: filters.minPrice ? parseInt(filters.minPrice) : undefined,
+    maxPrice: filters.maxPrice ? parseInt(filters.maxPrice) : undefined
+  });
+
+  // Additional filtering for beds and baths (not in the hook yet)
+  const filteredProperties = hookFilteredProperties.filter(property => {
+    if (filters.beds && property.beds < parseInt(filters.beds)) return false;
+    if (filters.baths && property.baths < parseInt(filters.baths)) return false;
+    return true;
+  });
 
   useEffect(() => {
-    const fetchProperties = async () => {
-      try {
-        setLoading(true);
-        const { data, error } = await supabase
-          .from('properties')
-          .select('*');
+    // Update filters when URL params change
+    setFilters(prev => ({
+      ...prev,
+      tag: category || '',
+      type: type || ''
+    }));
+  }, [category, type]);
 
-        if (error) {
-          throw error;
-        }
 
-        if (data) {
-          setProperties(data);
-        }
-      } catch (error) {
-        console.error('Error fetching properties:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to load properties. Please try again later.',
-          variant: 'destructive',
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProperties();
-  }, [toast]);
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
 
   const [sortBy, setSortBy] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
   
   const sortOptions = [
     { value: 'price-asc', label: 'Price: Low to High' },
@@ -76,67 +78,14 @@ const PropertiesPage = () => {
   ];
 
   const currentSortLabel = sortOptions.find(option => option.value === sortBy)?.label || 'Sort By';
-
-  const [filters, setFilters] = useState({
-    location: '',
-    tag: '',
-    minPrice: null as number | null,
-    maxPrice: null as number | null
-  });
-  
-  useEffect(() => {
-    const location = searchParams.get('location');
-    const category = searchParams.get('category');
-    const minPrice = searchParams.get('minPrice');
-    const maxPrice = searchParams.get('maxPrice');
-
-    setFilters({
-      location: location || '',
-      tag: category || '',
-      minPrice: minPrice ? parseInt(minPrice) : null,
-      maxPrice: maxPrice ? parseInt(maxPrice) : null,
-    });
-  }, [searchParams]);
   
   const clearFilters = () => {
-    setFilters({ location: '', tag: '', minPrice: null, maxPrice: null });
-    setSearchQuery('');
+    setFilters({ tag: '', type: '', minPrice: '', maxPrice: '', beds: '', baths: '' });
+    setSearchTerm('');
     window.history.pushState({}, '', '/properties');
   };
 
-  const sortedAndFilteredProperties = properties
-    .filter(property => {
-      // Text search filter
-      if (searchQuery) {
-        const searchLower = searchQuery.toLowerCase();
-        const matchesSearch = (
-          property.title.toLowerCase().includes(searchLower) ||
-          property.location.toLowerCase().includes(searchLower)
-        );
-        if (!matchesSearch) return false;
-      }
-      
-      // Location filter
-      if (filters.location && property.location !== filters.location) {
-        return false;
-      }
-      
-      // Tag filter
-      if (filters.tag && property.tag !== filters.tag) {
-        return false;
-      }
-      
-      // Price range filter
-      if (filters.minPrice && property.price < filters.minPrice) {
-        return false;
-      }
-      
-      if (filters.maxPrice && property.price > filters.maxPrice) {
-        return false;
-      }
-      
-      return true;
-    })
+  const sortedAndFilteredProperties = filteredProperties
     .sort((a, b) => {
       switch (sortBy) {
         case 'price-asc':
@@ -165,27 +114,37 @@ const PropertiesPage = () => {
             <p className="text-gray-600">Find your perfect property from our listings</p>
             
             {/* Show active filters */}
-            {(filters.location || filters.tag || filters.minPrice || filters.maxPrice) && (
+            {(filters.tag || filters.type || filters.minPrice || filters.maxPrice || filters.beds || filters.baths) && (
               <div className="mt-4 flex flex-wrap gap-2">
                 <span className="text-sm text-gray-600">Active filters:</span>
-                {filters.location && (
-                  <span className="bg-real-blue text-white px-2 py-1 rounded text-sm">
-                    Location: {filters.location}
-                  </span>
-                )}
                 {filters.tag && (
                   <span className="bg-real-orange text-white px-2 py-1 rounded text-sm">
-                    Type: {filters.tag}
+                    Category: {filters.tag}
+                  </span>
+                )}
+                {filters.type && (
+                  <span className="bg-real-orange text-white px-2 py-1 rounded text-sm">
+                    Type: {filters.type}
                   </span>
                 )}
                 {filters.minPrice && (
                   <span className="bg-real-blue text-white px-2 py-1 rounded text-sm">
-                    Min: {formatPrice(filters.minPrice)}
+                    Min: {formatPrice(parseInt(filters.minPrice))}
                   </span>
                 )}
                 {filters.maxPrice && (
                   <span className="bg-real-blue text-white px-2 py-1 rounded text-sm">
-                    Max: {formatPrice(filters.maxPrice)}
+                    Max: {formatPrice(parseInt(filters.maxPrice))}
+                  </span>
+                )}
+                {filters.beds && (
+                  <span className="bg-real-blue text-white px-2 py-1 rounded text-sm">
+                    Beds: {filters.beds}+
+                  </span>
+                )}
+                {filters.baths && (
+                  <span className="bg-real-blue text-white px-2 py-1 rounded text-sm">
+                    Baths: {filters.baths}+
                   </span>
                 )}
                 <button
@@ -221,8 +180,8 @@ const PropertiesPage = () => {
               type="search" 
               placeholder="Search properties..."
               className="max-w-xs"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
         </div>
@@ -239,42 +198,46 @@ const PropertiesPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {sortedAndFilteredProperties.map((property) => (
               <div key={property.id} className="property-card relative bg-white rounded-lg shadow-md overflow-hidden group hover:shadow-xl transition-shadow duration-300">
-                {/* Add to cart button for non-admin users */}
-                {user && !isAdmin && (
-                  <div className="absolute top-4 right-4 z-10">
-                    <button 
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        addToCart(property.id);
-                      }}
-                      className={`p-2 rounded-full shadow ${isInCart(property.id) ? 'bg-real-orange text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
-                      aria-label="Add to cart"
-                    >
-                      <ShoppingCart size={16} />
-                    </button>
-                  </div>
-                )}
-                
                 <div className="relative overflow-hidden">
                   <img 
                     src={property.image} 
                     alt={property.title}
-                    className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-300"
+                    className="w-full h-80 object-cover group-hover:scale-110 transition-transform duration-300 shadow-lg"
                   />
+                  
+                  {/* Property badges - left side */}
                   <div className="absolute top-4 left-4 bg-real-orange text-white py-1 px-3 rounded-full text-sm">
-              {property.tag}
-            </div>
-                  {property.isPopular && (
-                    <div className="absolute top-4 right-4 bg-real-orange text-white py-1 px-3 rounded-full text-sm">
-                      Popular
-                    </div>
-                  )}
-                  {property.isNew && (
-                    <div className="absolute top-4 right-4 bg-real-green text-white py-1 px-3 rounded-full text-sm">
-                      New
-                    </div>
-                  )}
+                    {property.tag}
+                  </div>
+                  
+                  {/* Property status badges - right side with proper stacking */}
+                  <div className="absolute top-4 right-4 flex flex-col gap-2">
+                    {user && !isAdmin && (
+                      <button 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          addToCart(property.id);
+                        }}
+                        className={`p-2 rounded-full shadow z-20 ${isInCart(property.id) ? 'bg-real-orange text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+                        aria-label="Add to cart"
+                      >
+                        <ShoppingCart size={16} />
+                      </button>
+                    )}
+                    {property.isPopular && (
+                      <div className="bg-real-orange text-white py-1 px-3 rounded-full text-sm">
+                        Popular
+                      </div>
+                    )}
+                    {property.isNew && (
+                      <div className="bg-green-500 text-white py-1 px-3 rounded-full text-sm">
+                        New
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Rating badge - bottom left */}
                   <div className="absolute bottom-4 left-4 bg-white py-1 px-3 rounded-full flex items-center gap-1 text-sm">
                     <Star size={14} className="text-yellow-400 fill-yellow-400" />
                     <span>{property.rating}</span>
@@ -284,9 +247,16 @@ const PropertiesPage = () => {
                 <div className="p-6">
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="text-xl font-semibold">{property.title}</h3>
-                    <span className="text-real-blue font-semibold">
-                      {formatPrice(property.price)}
-                    </span>
+                    <div className="text-right">
+                      <span className="text-real-blue font-semibold block">
+                        {formatPrice(property.price)}
+                      </span>
+                      {property.tag === PropertyCategory.FOR_SALE && (
+                        <span className="text-green-600 text-sm font-medium">
+                          50% accepted {formatPrice(property.price / 2)}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   
                   <div className="flex items-center text-gray-600 mb-4">
@@ -294,7 +264,7 @@ const PropertiesPage = () => {
                     {property.location}
                   </div>
                   
-                  <div className="flex justify-between text-gray-600">
+                  <div className="flex justify-between text-gray-600 mb-4">
                     {property.beds > 0 && (
                       <div className="flex items-center gap-1">
                         <Bed size={16} />
@@ -312,11 +282,9 @@ const PropertiesPage = () => {
                       <span>{property.sqft} sq ft</span>
                     </div>
                   </div>
-                </div>
-                
-                {/* Add to cart button at the bottom of the card */}
-                {user && !isAdmin && (
-                  <div className="mt-4">
+                  
+                  {/* Add to cart button at the bottom of the card */}
+                  {user && !isAdmin && (
                     <button
                       onClick={(e) => {
                         e.preventDefault();
@@ -328,13 +296,13 @@ const PropertiesPage = () => {
                     >
                       {isInCart(property.id) ? 'Added to Cart' : 'Add to Cart'}
                     </button>
-                  </div>
-                )}
+                  )}
+                </div>
                 
                 <Link
                   to={`/properties/${property.id}`}
                   state={{ property }}
-                  className="absolute inset-0"
+                  className="absolute inset-0 z-10"
                   aria-label={`View details for ${property.title}`}
                 />
               </div>

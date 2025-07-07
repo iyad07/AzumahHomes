@@ -8,6 +8,7 @@ import { Bed, Bath, Maximize, Star, MapPin, Home, Heart, User, Clock, XIcon, X, 
 import { useCart } from '@/contexts/CartContext';
 import { ShoppingCart } from 'lucide-react';
 import PaymentPage from './PaymentPage';
+import { formatPrice } from "@/utils/paymentCalculations";
 
 // Enhanced DashboardHome component with real data
 const DashboardHome = () => {
@@ -50,14 +51,7 @@ const DashboardHome = () => {
     fetchUserProperties();
   }, [user, toast, isAdmin]);
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
+
 
   return (
     <div>
@@ -882,11 +876,16 @@ const Cart = () => {
   const navigate = useNavigate();
 
   const handleCheckout = async () => {
+    // Check if there are any properties for sale in the cart
+    const hasForSaleProperties = cartItems.some(item => item.property.tag === 'For Sale');
     // Check if there are any rental properties in the cart
     const hasRentals = cartItems.some(item => item.property.tag === 'For Rent');
     
     if (hasRentals) {
       // Navigate to the rental payment page
+      navigate('/dashboard/payment');
+    } else if (hasForSaleProperties) {
+      // Navigate to the payment page for properties for sale
       navigate('/dashboard/payment');
     } else {
       toast({

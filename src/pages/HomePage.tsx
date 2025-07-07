@@ -35,11 +35,9 @@ const HomePage = () => {
       <HeroSection />
       <CategorySection />
       <FeaturedProperties />
-      <AboutSection />
       <StatsSection />
       <LocationsSection />
-      <AgentsSection />
-      <TestimonialsSection />
+      <AboutSection/>
       <BlogSection />
       <NewsletterSection />
     </div>

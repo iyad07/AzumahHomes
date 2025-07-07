@@ -114,17 +114,7 @@ const Header = () => {
                 !shouldUseDarkText && "lg:text-white"
               )}
             >
-              Azumah
-            </div>
-            <div
-              className={cn(
-                "text-md font-medium tracking-wide ml-5 -mt-1",
-                // Always dark on mobile for visibility, conditional on desktop
-                "text-black",
-                !shouldUseDarkText && "lg:text-white"
-              )}
-            >
-              Homes
+              Azumah Homes
             </div>
           </div>
         </Link>

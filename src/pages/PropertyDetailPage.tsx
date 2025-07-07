@@ -1,67 +1,40 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Bed, Bath, Maximize, Star, MapPin, ArrowLeft, ShoppingCart } from 'lucide-react';
+import { MapPin, Bed, Bath, Square, Star, ArrowLeft, ShoppingCart, Heart, Calendar, Maximize } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { supabase, Property } from '@/lib/supabase';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Property } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
-import SEO from "@/components/SEO";
+import { useAuth } from '@/contexts/AuthContext';
+import { useProperty } from '@/hooks/useProperties';
+import { formatPrice } from '@/utils/paymentCalculations';
+import { PropertyCategory } from '@/types/property';
+import SEO from '@/components/SEO';
 
 const PropertyDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const [property, setProperty] = useState<Property | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [selectedPaymentPeriod, setSelectedPaymentPeriod] = useState(12);
   const { toast } = useToast();
-  const { user, isAdmin } = useAuth();
   const { addToCart, isInCart } = useCart();
-
-  useEffect(() => {
-    const fetchProperty = async () => {
-      if (!id) return;
-      
-      try {
-        setLoading(true);
-        const { data, error } = await supabase
-          .from('properties')
-          .select('*')
-          .eq('id', id)
-          .single();
+  const { user, isAdmin } = useAuth();
   
-        if (error) {
-          if (error.code === 'PGRST116') {
-            // No rows returned (property not found)
-            setProperty(null);
-          } else {
-            throw error;
-          }
-        } else if (data) {
-          setProperty(data);
-        }
-      } catch (error: any) {
-        console.error('Error fetching property:', error);
-        toast({
-          title: 'Error',
-          description: error.message || 'Failed to load property details. Please try again later.',
-          variant: 'destructive',
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Use the custom hook for fetching property
+  const { property, loading, error } = useProperty(id || '');
+  
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to load property details.',
+        variant: 'destructive',
+      });
+    }
+  }, [error, toast]);
 
-    fetchProperty();
-  }, [id, toast]);
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
 
   const handleAddToCart = () => {
     if (property) {
@@ -113,7 +86,7 @@ const PropertyDetailPage = () => {
             <img 
               src={property.image} 
               alt={property.title}
-              className="w-full h-[300px] md:h-[500px] object-cover rounded-lg"
+              className="w-full h-[400px] md:h-[600px] lg:h-[700px] object-cover rounded-lg shadow-lg"
             />
             <div className="absolute top-4 left-4 bg-real-orange text-white py-1 px-3 rounded-full text-xs md:text-sm">
               {property.tag}
@@ -143,9 +116,63 @@ const PropertyDetailPage = () => {
               <span className="text-sm md:text-base">{property.location}</span>
             </div>
 
-            <div className="text-xl md:text-3xl font-bold text-real-blue mb-4 md:mb-8">
-              {formatPrice(property.price)}
+            <div className="mb-4 md:mb-8">
+              <div className="text-xl md:text-3xl font-bold text-real-blue">
+                {formatPrice(property.price)}
+              </div>
+              {property.tag === PropertyCategory.FOR_SALE && (
+                <div className="text-green-600 text-sm md:text-base font-medium mt-1">
+                  50% accepted {formatPrice(property.price / 2)}
+                </div>
+              )}
             </div>
+
+            {/* Payment Plan Section - Only for properties For Sale */}
+            {property.tag === PropertyCategory.FOR_SALE && (
+              <div className="bg-gray-50 p-4 md:p-6 rounded-lg mb-6 md:mb-8">
+                <div className="flex items-center gap-2 mb-4">
+                  <Calendar size={20} className="text-real-orange" />
+                  <h3 className="text-lg md:text-xl font-semibold">Payment Plan</h3>
+                </div>
+                
+                <p className="text-gray-600 text-sm md:text-base mb-4">
+                  Choose your preferred payment period for the remaining 50% ({formatPrice(property.price / 2)})
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                  {[4, 8, 12].map((months) => {
+                    const monthlyPayment = (property.price / 2) / months;
+                    const isSelected = selectedPaymentPeriod === months;
+                    
+                    return (
+                      <button
+                        key={months}
+                        onClick={() => setSelectedPaymentPeriod(months)}
+                        className={`p-3 md:p-4 rounded-lg border-2 transition-all text-left ${
+                          isSelected 
+                            ? 'border-real-orange bg-orange-50 text-real-orange' 
+                            : 'border-gray-200 bg-white hover:border-gray-300'
+                        }`}
+                      >
+                        <div className="font-semibold text-sm md:text-base">{months} Months</div>
+                        <div className="text-xs md:text-sm text-gray-600 mt-1">
+                          {formatPrice(monthlyPayment)}/month
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+                
+                <div className="mt-4 p-3 md:p-4 bg-white rounded-lg border">
+                  <div className="text-sm md:text-base text-gray-600">
+                    Selected Plan: <span className="font-semibold text-gray-900">{selectedPaymentPeriod} months</span>
+                  </div>
+                  <div className="text-lg md:text-xl font-bold text-real-orange mt-1">
+                    {formatPrice((property.price / 2) / selectedPaymentPeriod)}/month
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-3 gap-4 md:gap-6 p-4 md:p-6 bg-gray-50 rounded-lg mb-6 md:mb-8">
               {property.beds > 0 && (
