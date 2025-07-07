@@ -25,7 +25,7 @@
   ],
   "rewrites": [
     {
-      "source": "/((?!sitemap\\.xml|robots\\.txt|favicon\\.ico|.*(png|jpg|jpeg|gif|svg|ico|css|js|json|xml|txt)).*)",
+      "source": "/((?!api/|_next/|_static/|sitemap\\.xml|robots\\.txt|favicon\\.ico|.*\\.(png|jpg|jpeg|gif|svg|ico|css|js|json|xml|txt)).*)",
       "destination": "/index.html"
     }
   ]

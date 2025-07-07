@@ -12,99 +12,15 @@ import { PropertyCategory } from "@/types/property";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-// Sample property data
-const properties = [
-  {
-    id: 1,
-    title: "Modern Apartment with Sea View",
-    location: "New York City, NY",
-    price: 240000,
-    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80",
-    beds: 3,
-    baths: 2,
-    sqft: 1200,
-    tag: "For Sale",
-    rating: 4.8,
-    isPopular: true,
-    isNew: false,
-  },
-  {
-    id: 2,
-    title: "Luxury Villa with Pool",
-    location: "Miami, FL",
-    price: 850000,
-    image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1175&q=80",
-    beds: 5,
-    baths: 4,
-    sqft: 3500,
-    tag: "For Sale",
-    rating: 4.9,
-    isPopular: true,
-    isNew: false,
-  },
-  {
-    id: 3,
-    title: "Cozy Studio in Downtown",
-    location: "Chicago, IL",
-    price: 120000,
-    image: "https://images.unsplash.com/photo-1484154218962-a197022b5858?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1174&q=80",
-    beds: 1,
-    baths: 1,
-    sqft: 600,
-    tag: "For Rent",
-    rating: 4.5,
-    isPopular: false,
-    isNew: true,
-  },
-  {
-    id: 4,
-    title: "Family House with Garden",
-    location: "Seattle, WA",
-    price: 450000,
-    image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80",
-    beds: 4,
-    baths: 3,
-    sqft: 2200,
-    tag: "For Sale",
-    rating: 4.7,
-    isPopular: false,
-    isNew: true,
-  },
-  {
-    id: 5,
-    title: "Modern Office Space",
-    location: "Austin, TX",
-    price: 350000,
-    image: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1169&q=80",
-    beds: 0,
-    baths: 2,
-    sqft: 1500,
-    tag: "For Rent",
-    rating: 4.6,
-    isPopular: false,
-    isNew: false,
-  },
-  {
-    id: 6,
-    title: "Penthouse with City Views",
-    location: "Los Angeles, CA",
-    price: 980000,
-    image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1080&q=80",
-    beds: 3,
-    baths: 3,
-    sqft: 2000,
-    tag: "For Sale",
-    rating: 4.9,
-    isPopular: true,
-    isNew: false,
-  }
-];
-
 const FeaturedProperties = () => {
-  const { filteredProperties: properties, loading } = useProperties({ 
-    featured: true, 
+  const { properties: allProperties, loading } = useProperties({ 
     limit: 6 
   });
+  
+  // Filter for popular properties, fallback to all properties if none are popular
+  const properties = allProperties.filter(p => p.isPopular).length > 0 
+    ? allProperties.filter(p => p.isPopular) 
+    : allProperties;
   const { addToCart, isInCart } = useCart();
   const { toast } = useToast();
   const [currentIndex, setCurrentIndex] = useState(0);
