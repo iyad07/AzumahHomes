@@ -8,12 +8,13 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import SEO from '@/components/SEO';
 
 const SubmitBlogPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPreview, setIsPreview] = useState(false);
   
@@ -26,12 +27,6 @@ const SubmitBlogPage = () => {
     readTime: '',
     tags: ''
   });
-
-  // Redirect if not admin
-  if (!isAdmin) {
-    navigate('/');
-    return null;
-  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -108,13 +103,14 @@ const SubmitBlogPage = () => {
   };
 
   return (
-    <div className="pt-24 md:pt-32 pb-12 md:pb-20 min-h-screen bg-gray-50">
-      <SEO 
-        title="Submit Blog Post - Azumah Homes Admin"
-        description="Create and publish new blog posts for Azumah Homes"
-        keywords="admin, blog, create post, Azumah Homes"
-        url="https://azumahhomes.vercel.app/submit-blog"
-      />
+    <ProtectedRoute requireAdmin={true}>
+      <div className="pt-24 md:pt-32 pb-12 md:pb-20 min-h-screen bg-gray-50">
+        <SEO 
+          title="Submit Blog Post - Azumah Homes Admin"
+          description="Create and publish new blog posts for Azumah Homes"
+          keywords="admin, blog, create post, Azumah Homes"
+          url="https://azumahhomes.vercel.app/submit-blog"
+        />
       
       <div className="container mx-auto px-4 max-w-4xl">
         {/* Header */}
@@ -338,8 +334,9 @@ const SubmitBlogPage = () => {
             </div>
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </ProtectedRoute>
   );
 };
 

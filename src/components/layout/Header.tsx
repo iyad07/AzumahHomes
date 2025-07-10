@@ -77,22 +77,30 @@ const Header = () => {
             </div>
           </div>
 
-          <div className="flex justify-end mr-4">
-            {user ? (
+          <div className="flex items-center gap-6 mr-4">
+            {!user && (
+              <>
+                <Link
+                  to="/login"
+                  className="text-sm font-medium hover:text-real-orange transition-colors"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/signup"
+                  className="text-sm font-medium hover:text-real-orange transition-colors"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
+            {user && (
               <Link
                 to="/dashboard"
                 className="inline-flex items-center gap-2 hover:text-real-orange transition-colors"
               >
                 <User size={16} />
                 <span>Dashboard</span>
-              </Link>
-            ) : (
-              <Link
-                to="/login"
-                className="inline-flex items-center gap-2 hover:text-real-orange transition-colors"
-              >
-                <User size={16} />
-                <span>Login / Register</span>
               </Link>
             )}
           </div>
@@ -200,23 +208,7 @@ const Header = () => {
                 <Heart size={20} />
               </Link>
             )}
-            {!user && (
-              <>
-                <Link to="/login" className="hidden lg:inline-block">
-                  <Button variant="outline" className={cn(
-                    "border-2",
-                    shouldUseDarkText ? "border-real-orange text-real-orange hover:bg-real-orange hover:text-white" : "border-white text-white hover:bg-white hover:text-real-orange"
-                  )}>
-                    Login
-                  </Button>
-                </Link>
-                <Link to="/signup" className="hidden lg:inline-block">
-                  <Button className="bg-real-orange hover:bg-orange-600">
-                    Sign Up
-                  </Button>
-                </Link>
-              </>
-            )}
+            {/* Login/Signup buttons moved to top header */}
             {isAdmin && (
               <>
                 <Link to="/submit-listing" className="hidden lg:inline-block">
@@ -359,14 +351,14 @@ const Header = () => {
               <>
                 <NavLink
                   to="/submit-listing"
-                  className="bg-real-orange text-white py-3 px-6 rounded-md text-center"
+                  className="bg-real-orange text-white py-3 px-6 rounded-md text-center lg:hidden"
                   onClick={toggleMobileMenu}
                 >
                   Add Property
                 </NavLink>
                 <NavLink
                   to="/submit-blog"
-                  className="border-2 border-real-orange text-real-orange py-3 px-6 rounded-md text-center hover:bg-real-orange hover:text-white transition-colors"
+                  className="border-2 border-real-orange text-real-orange py-3 px-6 rounded-md text-center hover:bg-real-orange hover:text-white transition-colors lg:hidden"
                   onClick={toggleMobileMenu}
                 >
                   Add Blog
@@ -376,18 +368,18 @@ const Header = () => {
           </nav>
 
           {!user && (
-            <div className="mt-8 pt-6 border-t">
+            <div className="mt-8 pt-6 border-t lg:hidden">
               <div className="flex flex-col space-y-3">
                 <Link
                   to="/login"
-                  className="bg-real-orange text-white py-3 px-6 rounded-md text-center font-medium"
+                  className="bg-real-orange text-white py-3 px-6 rounded-md text-center font-medium lg:hidden"
                   onClick={toggleMobileMenu}
                 >
                   Login
                 </Link>
                 <Link
                   to="/signup"
-                  className="border-2 border-real-orange text-real-orange py-3 px-6 rounded-md text-center font-medium hover:bg-real-orange hover:text-white transition-colors"
+                  className="border-2 border-real-orange text-real-orange py-3 px-6 rounded-md text-center font-medium hover:bg-real-orange hover:text-white transition-colors lg:hidden"
                   onClick={toggleMobileMenu}
                 >
                   Sign Up
@@ -396,7 +388,7 @@ const Header = () => {
             </div>
           )}
 
-          <div className="mt-10 border-t pt-6">
+          <div className="mt-10 border-t pt-6 lg:hidden">
             <div className="flex flex-col space-y-4">
               <div className="flex items-center gap-2">
                 <Phone size={16} className="text-real-orange" />

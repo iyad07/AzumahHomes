@@ -1,19 +1,58 @@
 
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useNavigate, useParams } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabase';
-import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import SEO from '@/components/SEO';
+
+// Environment validation and debugging
+const checkEnvironment = () => {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  
+  // Debug logging for production troubleshooting
+  console.log('Environment check:', {
+    hasUrl: !!supabaseUrl,
+    hasKey: !!supabaseKey,
+    urlLength: supabaseUrl?.length || 0,
+    keyLength: supabaseKey?.length || 0,
+    mode: import.meta.env.MODE,
+    dev: import.meta.env.DEV,
+  });
+  
+  if (!supabaseUrl || !supabaseKey) {
+    console.error('Missing Supabase environment variables:', {
+      VITE_SUPABASE_URL: supabaseUrl ? 'SET' : 'MISSING',
+      VITE_SUPABASE_ANON_KEY: supabaseKey ? 'SET' : 'MISSING',
+    });
+    return false;
+  }
+  
+  if (supabaseUrl.includes('your_supabase') || supabaseKey.includes('your_supabase')) {
+    console.error('Environment variables contain placeholder values');
+    return false;
+  }
+  
+  return true;
+};
+
+// Debug utility for production
+const debugLog = (message: string, data?: any) => {
+  if (import.meta.env.DEV || import.meta.env.VITE_DEBUG === 'true') {
+    console.log(`[SubmitListingPage] ${message}`, data);
+  }
+};
 
 // Define the form schema with Zod
 const formSchema = z.object({
@@ -31,13 +70,37 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 const SubmitListingPage = () => {
-  const { user, isAdmin } = useAuth();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const editId = searchParams.get('edit');
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const { id: editId } = useParams();
   const isEditMode = !!editId;
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [environmentError, setEnvironmentError] = useState(false);
+  
+  // Check environment on component mount
+  useEffect(() => {
+    debugLog('Component mounting', { isEditMode, editId, userId: user?.id });
+    
+    const isEnvValid = checkEnvironment();
+    if (!isEnvValid) {
+      debugLog('Environment validation failed');
+      setEnvironmentError(true);
+      toast({
+        title: 'Configuration Error',
+        description: 'Application is not properly configured. Please contact support.',
+        variant: 'destructive',
+      });
+    } else {
+      debugLog('Environment validation passed');
+    }
+    
+    if (!isEditMode) {
+      debugLog('Not in edit mode, setting loading to false');
+      setIsLoading(false);
+    }
+  }, [isEditMode, toast, user?.id]);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -57,35 +120,60 @@ const SubmitListingPage = () => {
   // Fetch property data when in edit mode
   useEffect(() => {
     const fetchPropertyData = async () => {
-      if (!isEditMode || !editId) return;
+      if (!isEditMode || !editId) {
+        setIsLoading(false);
+        return;
+      }
       
-      setIsLoading(true);
       try {
+        setIsLoading(true);
+        debugLog('Starting property data fetch', { editId });
+        
+        // Check if Supabase is properly configured
+        if (!supabase) {
+          debugLog('Supabase client not available');
+          throw new Error('Database connection not available');
+        }
+        
+        debugLog('Making Supabase query');
         const { data, error } = await supabase
           .from('properties')
           .select('*')
           .eq('id', editId)
           .single();
         
-        if (error) throw error;
+        debugLog('Supabase query result', { hasData: !!data, error: error?.message });
+        
+        if (error) {
+          console.error('Supabase error:', error);
+          throw new Error(`Failed to fetch property: ${error.message}`);
+        }
         
         if (data) {
-          // Populate form with existing data
+          // Ensure all form fields have valid values
           form.reset({
-            title: data.title,
-            description: data.description,
-            location: data.location,
-            price: data.price,
-            beds: data.beds,
-            baths: data.baths,
-            sqft: data.sqft,
-            tag: data.tag,
-            image: data.image,
+            title: data.title || '',
+            description: data.description || '',
+            location: data.location || '',
+            price: data.price || 0,
+            beds: data.beds || 1,
+            baths: data.baths || 1,
+            sqft: data.sqft || 0,
+            tag: data.tag || 'For Sale',
+            image: data.image || '',
           });
+        } else {
+          throw new Error('Property not found');
         }
       } catch (error: any) {
-        toast.error('Failed to load property data');
-        navigate('/dashboard');
+        console.error('Error loading property data:', error);
+        toast({
+          title: 'Error',
+          description: error.message || 'Failed to load property data. Please try again.',
+          variant: 'destructive'
+        });
+        // Don't navigate away immediately, give user a chance to retry
+        setTimeout(() => navigate('/dashboard'), 3000);
       } finally {
         setIsLoading(false);
       }
@@ -94,46 +182,121 @@ const SubmitListingPage = () => {
     fetchPropertyData();
   }, [isEditMode, editId, form, navigate]);
 
-  const onSubmit = async (data: FormValues) => {
-    if (!user) return;
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (isSubmitting) {
+      debugLog('Form submission blocked - already submitting');
+      return; // Prevent double submission
+    }
     
+    debugLog('Starting form submission', { isEditMode, editId, values });
     setIsSubmitting(true);
+    
     try {
+      // Validate required fields
+      if (!values.title?.trim() || !values.location?.trim() || !values.description?.trim()) {
+        debugLog('Form validation failed - missing required fields');
+        throw new Error('Please fill in all required fields');
+      }
+      
+      // Check if user is authenticated
+      if (!user?.id) {
+        debugLog('User authentication failed', { hasUser: !!user, userId: user?.id });
+        throw new Error('You must be logged in to submit a property');
+      }
+      
+      // Check if Supabase is properly configured
+      if (!supabase) {
+        debugLog('Supabase client not available during submission');
+        throw new Error('Database connection not available. Please check your internet connection.');
+      }
+      
+      debugLog('All validations passed, preparing data');
+      
+      // Sanitize and prepare data
+      const propertyData = {
+        title: values.title.trim(),
+        description: values.description.trim(),
+        location: values.location.trim(),
+        price: Number(values.price) || 0,
+        beds: Number(values.beds) || 1,
+        baths: Number(values.baths) || 1,
+        sqft: Number(values.sqft) || 0,
+        tag: values.tag || 'For Sale',
+        image: values.image?.trim() || '',
+        rating: 4.5, // Default rating
+        isPopular: false,
+        isNew: true,
+      };
+      
       if (isEditMode && editId) {
         // Update existing property
         const { error } = await supabase
           .from('properties')
-          .update(data)
-          .eq('id', editId);
+          .update(propertyData)
+          .eq('id', editId)
+          .eq('user_id', user.id); // Ensure user owns the property
         
-        if (error) throw error;
+        if (error) {
+          console.error('Update error:', error);
+          throw new Error(`Failed to update property: ${error.message}`);
+        }
         
-        toast.success('Property updated successfully');
+        toast({
+          title: 'Success',
+          description: 'Property updated successfully!',
+        });
+        navigate('/dashboard');
       } else {
         // Create new property
-        const propertyData = {
-          ...data,
-          user_id: user.id,
-          rating: 0,
-        };
-        
         const { error } = await supabase
           .from('properties')
-          .insert([propertyData]);
+          .insert([{ ...propertyData, user_id: user.id }]);
         
-        if (error) throw error;
+        if (error) {
+          console.error('Insert error:', error);
+          throw new Error(`Failed to submit property: ${error.message}`);
+        }
         
-        toast.success('Property submitted successfully');
+        toast({
+          title: 'Success',
+          description: 'Property submitted successfully!',
+        });
+        navigate('/dashboard');
       }
-      
-      navigate('/dashboard');
     } catch (error: any) {
-      toast.error(error.message || `Failed to ${isEditMode ? 'update' : 'submit'} property`);
+      console.error('Form submission error:', error);
+      toast({
+        title: 'Error',
+        description: error.message || `Failed to ${isEditMode ? 'update' : 'submit'} property. Please try again.`,
+        variant: 'destructive',
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // Show environment error if configuration is invalid
+  if (environmentError) {
+    return (
+      <ProtectedRoute requireAdmin={true}>
+        <div className="pt-32 pb-20 min-h-screen flex items-center justify-center">
+          <div className="text-center max-w-md mx-auto px-4">
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              <h3 className="font-bold">Configuration Error</h3>
+              <p className="text-sm mt-2">
+                The application is not properly configured for deployment. 
+                Please ensure environment variables are set correctly.
+              </p>
+            </div>
+            <Button onClick={() => navigate('/dashboard')} variant="outline">
+              Return to Dashboard
+            </Button>
+          </div>
+        </div>
+      </ProtectedRoute>
+    );
+  }
+  
   if (isLoading) {
     return (
       <ProtectedRoute requireAdmin={true}>
