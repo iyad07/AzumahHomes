@@ -13,10 +13,12 @@ import { useProperty } from '@/hooks/useProperties';
 import { formatPrice } from '@/utils/paymentCalculations';
 import { PropertyCategory } from '@/types/property';
 import SEO from '@/components/SEO';
+import ContactAgentModal from '@/components/ContactAgentModal';
 
 const PropertyDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const [selectedPaymentPeriod, setSelectedPaymentPeriod] = useState(12);
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const { toast } = useToast();
   const { addToCart, isInCart } = useCart();
   const { user, isAdmin } = useAuth();
@@ -39,6 +41,22 @@ const PropertyDetailPage = () => {
   const handleAddToCart = () => {
     if (property) {
       addToCart(property.id);
+    }
+  };
+
+  const handleContactAgent = () => {
+    if (user) {
+      // User is logged in, show the contact modal
+      setIsContactModalOpen(true);
+    } else {
+      // User is not logged in, redirect to login
+      toast({
+        title: 'Login Required',
+        description: 'Please log in to contact the agent.',
+        variant: 'destructive',
+      });
+      // You could also redirect to login page here
+      // navigate('/login');
     }
   };
 
@@ -195,12 +213,12 @@ const PropertyDetailPage = () => {
             </div>
 
             <div className="flex flex-col md:flex-row gap-4 mt-6">
-              <Link 
-                to={`/agents/${property.user_id}`} 
+              <button 
+                onClick={handleContactAgent}
                 className="flex-1 bg-real-orange text-white py-2 md:py-3 px-4 md:px-6 rounded-md hover:bg-orange-600 transition-colors text-center font-medium text-sm md:text-base"
               >
                 Contact Agent
-              </Link>
+              </button>
               
               {user && !isAdmin && (
                 <button 
@@ -216,6 +234,14 @@ const PropertyDetailPage = () => {
           </div>
         </div>
       </div>
+      
+      {/* Contact Agent Modal */}
+      <ContactAgentModal
+        isOpen={isContactModalOpen}
+        onClose={() => setIsContactModalOpen(false)}
+        agentId={property?.user_id || ''}
+        propertyTitle={property?.title || ''}
+      />
     </div>
   );
 };

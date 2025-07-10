@@ -99,16 +99,16 @@ const Header = () => {
         </div>
 
         {/* Main navigation */}
-        <div className="flex justify-between items-center  px-4 -py-2">
+        <div className="flex justify-between items-center px-4 py-2">
         <Link
           to="/"
-          className="flex items-center gap-1 -mt-6 ml-4 mr-auto"
+          className="flex items-center gap-2"
         >
-          <img src="/logo.png" alt="Logo" className="w-20 h-25 -mr-3 mt-3" />
+          <img src="/logo.png" alt="Logo" className="w-12 h-12 lg:w-20 lg:h-20" />
           <div className="leading-tight">
             <div
               className={cn(
-                "text-5xl font-extrabold tracking-tight hover:text-blue-700 transition-colors duration-300 mt-3",
+                "text-2xl lg:text-5xl font-extrabold tracking-tight hover:text-blue-700 transition-colors duration-300",
                 // Always dark on mobile for visibility, conditional on desktop
                 "text-black lg:text-black lg:group-hover:text-blue-700",
                 !shouldUseDarkText && "lg:text-white"
@@ -200,12 +200,39 @@ const Header = () => {
                 <Heart size={20} />
               </Link>
             )}
+            {!user && (
+              <>
+                <Link to="/login" className="hidden lg:inline-block">
+                  <Button variant="outline" className={cn(
+                    "border-2",
+                    shouldUseDarkText ? "border-real-orange text-real-orange hover:bg-real-orange hover:text-white" : "border-white text-white hover:bg-white hover:text-real-orange"
+                  )}>
+                    Login
+                  </Button>
+                </Link>
+                <Link to="/signup" className="hidden lg:inline-block">
+                  <Button className="bg-real-orange hover:bg-orange-600">
+                    Sign Up
+                  </Button>
+                </Link>
+              </>
+            )}
             {isAdmin && (
-              <Link to="/submit-listing" className="hidden lg:inline-block">
-                <Button>
-                  Add Property
-                </Button>
-              </Link>
+              <>
+                <Link to="/submit-listing" className="hidden lg:inline-block">
+                  <Button>
+                    Add Property
+                  </Button>
+                </Link>
+                <Link to="/submit-blog" className="hidden lg:inline-block">
+                  <Button variant="outline" className={cn(
+                    "border-2",
+                    shouldUseDarkText ? "border-real-orange text-real-orange hover:bg-real-orange hover:text-white" : "border-white text-white hover:bg-white hover:text-real-orange"
+                  )}>
+                    Add Blog
+                  </Button>
+                </Link>
+              </>
             )}
             <button
               className={cn(
@@ -329,15 +356,45 @@ const Header = () => {
               Dashboard
             </NavLink>
             {isAdmin && (
-              <NavLink
-                to="/submit-listing"
-                className="bg-real-orange text-white py-3 px-6 rounded-md text-center"
-                onClick={toggleMobileMenu}
-              >
-                Add Property
-              </NavLink>
+              <>
+                <NavLink
+                  to="/submit-listing"
+                  className="bg-real-orange text-white py-3 px-6 rounded-md text-center"
+                  onClick={toggleMobileMenu}
+                >
+                  Add Property
+                </NavLink>
+                <NavLink
+                  to="/submit-blog"
+                  className="border-2 border-real-orange text-real-orange py-3 px-6 rounded-md text-center hover:bg-real-orange hover:text-white transition-colors"
+                  onClick={toggleMobileMenu}
+                >
+                  Add Blog
+                </NavLink>
+              </>
             )}
           </nav>
+
+          {!user && (
+            <div className="mt-8 pt-6 border-t">
+              <div className="flex flex-col space-y-3">
+                <Link
+                  to="/login"
+                  className="bg-real-orange text-white py-3 px-6 rounded-md text-center font-medium"
+                  onClick={toggleMobileMenu}
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/signup"
+                  className="border-2 border-real-orange text-real-orange py-3 px-6 rounded-md text-center font-medium hover:bg-real-orange hover:text-white transition-colors"
+                  onClick={toggleMobileMenu}
+                >
+                  Sign Up
+                </Link>
+              </div>
+            </div>
+          )}
 
           <div className="mt-10 border-t pt-6">
             <div className="flex flex-col space-y-4">

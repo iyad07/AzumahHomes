@@ -17,11 +17,13 @@ import AgentDetailPage from "./pages/AgentDetailPage";
 import ContactPage from "./pages/ContactPage";
 import BlogPage from "./pages/BlogPage";
 import BlogDetailPage from "./pages/BlogDetailPage";
+import SubmitBlogPage from "./pages/SubmitBlogPage";
 import SubmitListingPage from "./pages/SubmitListingPage";
 import DashboardPage from "./pages/DashboardPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +49,11 @@ const App = () => (
                   <Route path="contact" element={<ContactPage />} />
                   <Route path="blog" element={<BlogPage />} />
                   <Route path="blog/:id" element={<BlogDetailPage />} />
+                  <Route path="submit-blog" element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <SubmitBlogPage />
+                    </ProtectedRoute>
+                  } />
                   <Route path="submit-listing" element={<SubmitListingPage />} />
                   <Route path="dashboard/*" element={<DashboardPage />} />
                   <Route path="*" element={<NotFound />} />
