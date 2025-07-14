@@ -11,9 +11,9 @@ interface SEOProps {
 }
 
 const SEO = ({
-  title = "Azumah Homes - Premier Real Estate Solutions | Buy, Sell & Rent Properties",
-  description = "Find your dream home with Azumah Homes - Ghana's leading real estate platform. Browse luxury properties, connect with expert agents, and discover the best property deals.",
-  keywords = "real estate Ghana, properties for sale, houses for rent, Azumah Homes, Accra properties, Kumasi real estate, luxury homes Ghana",
+  title = "Azumah Homes - Flexible Rent-to-Own Real Estate Solutions | Buy, Sell & Rent Properties",
+  description = "Azumah Homes is a real estate startup dedicated to making homeownership more flexible, transparent, and accessible for all Ghanaians through our innovative rent-to-own model.",
+  keywords = "rent to own Ghana, flexible real estate, transparent property solutions, Greater Accra properties, Azumah Homes, real estate startup Ghana",
   image = "https://azumah-homes-mu.vercel.app/logo.png",
   url = "https://azumah-homes-mu.vercel.app",
   type = "website",

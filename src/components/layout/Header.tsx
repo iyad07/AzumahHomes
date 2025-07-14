@@ -69,11 +69,11 @@ const Header = () => {
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-1">
               <Phone size={16} className="ml-3"/>
-              <span>+1 (234) 567-890</span>
+              <span>0551319363</span>
             </div>
             <div className="flex items-center gap-2">
               <Mail size={16} />
-              <span>info@Azumahhomes.com</span>
+              <span>azumahhomes@gmail.com</span>
             </div>
           </div>
 
@@ -151,17 +151,7 @@ const Header = () => {
             >
               Properties
             </NavLink>
-            <NavLink
-              to="/agents"
-              className={({ isActive }) =>
-                cn(
-                  "font-medium transition-colors",
-                  isActive ? "text-real-orange" : shouldUseDarkText ? "text-black hover:text-real-orange" : "text-white hover:text-real-orange"
-                )
-              }
-            >
-              Agents
-            </NavLink>
+
             <NavLink
               to="/about"
               className={({ isActive }) =>
@@ -287,18 +277,7 @@ const Header = () => {
             >
               Properties
             </NavLink>
-            <NavLink
-              to="/agents"
-              className={({ isActive }) =>
-                cn(
-                  "text-xl font-medium",
-                  isActive ? "text-real-orange" : "text-gray-800"
-                )
-              }
-              onClick={toggleMobileMenu}
-            >
-              Agents
-            </NavLink>
+
             <NavLink
               to="/about"
               className={({ isActive }) =>
@@ -392,11 +371,11 @@ const Header = () => {
             <div className="flex flex-col space-y-4">
               <div className="flex items-center gap-2">
                 <Phone size={16} className="text-real-orange" />
-                <span>+1 (234) 567-890</span>
+                <span>0551319363</span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail size={16} className="text-real-orange" />
-                <span>info@Azumah Homes.com</span>
+                <span>azumahhomes@gmail.com</span>
               </div>
             </div>
           </div>

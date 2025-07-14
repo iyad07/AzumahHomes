@@ -45,11 +45,7 @@ const Footer = () => {
                   Properties
                 </Link>
               </li>
-              <li>
-                <Link to="/agents" className="text-gray-400 hover:text-white transition-colors">
-                  Our Agents
-                </Link>
-              </li>
+
               <li>
                 <Link to="/about" className="text-gray-400 hover:text-white transition-colors">
                   About Us
@@ -97,14 +93,14 @@ const Footer = () => {
               </li>
               <li className="flex items-center gap-3">
                 <Phone size={20} className="text-real-blue" />
-                <a href="tel:+12345678901" className="text-gray-400 hover:text-white transition-colors">
-                  +1 (234) 567-8901
+                <a href="tel:0551319363" className="text-gray-400 hover:text-white transition-colors">
+                  0551319363
                 </a>
               </li>
               <li className="flex items-center gap-3">
                 <Mail size={20} className="text-real-blue" />
-                <a href="mailto:info@Azumah Homes.com" className="text-gray-400 hover:text-white transition-colors">
-                  info@Azumah Homes.com
+                <a href="mailto:azumahhomes@gmail.com" className="text-gray-400 hover:text-white transition-colors">
+                  azumahhomes@gmail.com
                 </a>
               </li>
             </ul>

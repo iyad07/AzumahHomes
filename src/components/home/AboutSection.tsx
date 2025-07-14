@@ -6,7 +6,7 @@ import { CheckCircle } from "lucide-react";
 const AboutSection = () => {
   const features = [
     "Find Your Dream Home",
-    "Experienced Agents",
+    "Flexible Solutions",
     "Transparent Process",
     "Reliable Service",
   ];
@@ -56,8 +56,8 @@ const AboutSection = () => {
               </div>
               
               <div className="flex flex-col">
-                <span className="text-3xl font-bold text-gray-800">400+</span>
-                <span className="text-gray-500">Agents</span>
+                <span className="text-3xl font-bold text-gray-800">100%</span>
+                <span className="text-gray-500">Flexible</span>
               </div>
               
               <div className="flex flex-col">

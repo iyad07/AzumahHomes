@@ -5,9 +5,9 @@ const AboutPage = () => {
   return (
     <div className="pt-32 pb-20 min-h-screen">
       <SEO 
-        title="About Azumah Homes - Your Trusted Real Estate Partner Since 2010"
-        description="Learn about Azumah Homes' journey, values, and commitment to helping thousands of families find their dream homes in Ghana. Discover our story of integrity, excellence, and innovation."
-        keywords="about Azumah Homes, real estate company Ghana, property experts, real estate history, trusted agents Ghana"
+        title="About Azumah Homes - Flexible Rent-to-Own Real Estate Solutions"
+        description="Azumah Homes is a real estate startup dedicated to making homeownership more flexible, transparent, and accessible for all Ghanaians through our innovative rent-to-own model."
+        keywords="about Azumah Homes, rent to own Ghana, flexible real estate, transparent property solutions, Greater Accra properties"
         url="https://azumahhomes.vercel.app/about"
       />
       <div className="container mx-auto px-4">
@@ -17,14 +17,17 @@ const AboutPage = () => {
           <div>
             <h2 className="text-2xl font-semibold mb-4">Our Story</h2>
             <p className="text-gray-600 mb-6">
-              Founded in 2010, Azumah Homes has grown to become one of the most trusted names in real estate. 
-              Our journey began with a simple mission: to help people find their perfect homes while providing 
-              exceptional service and expertise.
+              Azumah Homes is a real estate startup dedicated to making homeownership more flexible, transparent, and accessible for all. 
+              We understand that for many Ghanaians, buying a home is both a major financial decision and a deeply personal milestone.
             </p>
             <p className="text-gray-600 mb-6">
-              Today, we're proud to have helped thousands of families find their dream homes and investors 
-              make smart property decisions. Our success is built on our commitment to transparency, 
-              integrity, and customer satisfaction.
+              That's why we've built a rent-to-own model that puts your needs first — offering verified properties, fair pricing, 
+              and flexible payment options designed to meet real budgets. Whether you're a first-time buyer, a growing family, 
+              or an investor, Azumah Homes provides tailored property solutions across Greater Accra.
+            </p>
+            <p className="text-gray-600 mb-6">
+              From modern apartments to gated family homes, we focus on quality listings that are secure, properly documented, 
+              and free from hidden complications. <strong>Secure. Flexible. Transparent.</strong> That's the Azumah way.
             </p>
           </div>
           
@@ -41,24 +44,24 @@ const AboutPage = () => {
           <h2 className="text-2xl font-semibold mb-6">Our Values</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="p-6 bg-white rounded-lg shadow-md">
-              <h3 className="text-xl font-semibold mb-3">Integrity</h3>
+              <h3 className="text-xl font-semibold mb-3">Secure</h3>
               <p className="text-gray-600">
-                We believe in honest, transparent dealings with all our clients, 
-                building trust through every interaction.
+                All our properties are verified, properly documented, and free from 
+                hidden complications, ensuring your investment is protected.
               </p>
             </div>
             <div className="p-6 bg-white rounded-lg shadow-md">
-              <h3 className="text-xl font-semibold mb-3">Excellence</h3>
+              <h3 className="text-xl font-semibold mb-3">Flexible</h3>
               <p className="text-gray-600">
-                We strive for excellence in every aspect of our service, 
-                from property selection to client communication.
+                Our rent-to-own model offers flexible payment options designed to 
+                meet real budgets and make homeownership accessible to all.
               </p>
             </div>
             <div className="p-6 bg-white rounded-lg shadow-md">
-              <h3 className="text-xl font-semibold mb-3">Innovation</h3>
+              <h3 className="text-xl font-semibold mb-3">Transparent</h3>
               <p className="text-gray-600">
-                We embrace modern technology and innovative solutions to 
-                provide the best possible service to our clients.
+                We believe in honest, transparent dealings with fair pricing 
+                and no hidden fees or complications.
               </p>
             </div>
           </div>

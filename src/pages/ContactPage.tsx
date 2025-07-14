@@ -31,25 +31,25 @@ const ContactPage = () => {
     {
       icon: <MapPin className="w-5 h-5" />,
       title: 'Office Address',
-      content: '123 Business Avenue, New York, NY 10001',
-      link: 'https://maps.google.com/?q=123+Business+Avenue+New+York+NY+10001'
+      content: '123 Independence Avenue, Accra, Ghana',
+      link: 'https://maps.google.com/?q=123+Independence+Avenue+Accra+Ghana'
     },
     {
       icon: <Phone className="w-5 h-5" />,
       title: 'Phone Number',
-      content: '(555) 123-4567',
-      link: 'tel:+15551234567'
+      content: '0551319363',
+      link: 'tel:+233551319363'
     },
     {
       icon: <Mail className="w-5 h-5" />,
       title: 'Email Address',
-      content: 'contact@Azumahhomes.com',
-      link: 'mailto:contact@Azumahhomes.com'
+      content: 'azumahhomes@gmail.com',
+      link: 'mailto:azumahhomes@gmail.com'
     },
     {
       icon: <Clock className="w-5 h-5" />,
       title: 'Business Hours',
-      content: 'Mon - Fri: 9:00 AM - 6:00 PM\nSat: 10:00 AM - 4:00 PM',
+      content: 'Mon - Fri: 8:00 AM - 6:00 PM',
       multiline: true
     }
   ];

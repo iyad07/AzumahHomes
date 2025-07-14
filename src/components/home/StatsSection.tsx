@@ -1,6 +1,6 @@
 
 import { useEffect, useRef, useState } from "react";
-import { Users, Home, Award, ThumbsUp } from "lucide-react";
+import { Users, Home, ThumbsUp } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 interface StatItemProps {
@@ -66,7 +66,6 @@ const StatsSection = () => {
     { icon: <Home size={32} />, value: 0, label: "Properties Listed", suffix: "+" },
     { icon: <Users size={32} />, value: 0, label: "Verified Users", suffix: "+" },
     { icon: <ThumbsUp size={32} />, value: 0, label: "Satisfied Clients", suffix: "+" },
-    { icon: <Award size={32} />, value: 20, label: "Awards Won", suffix: "+" },
   ]);
 
   useEffect(() => {
@@ -92,8 +91,6 @@ const StatsSection = () => {
           { ...prev[1], value: userCount || 0 },
           // For satisfied clients, we'll use a formula based on properties
           { ...prev[2], value: Math.floor((propertyCount || 0) * 1.5) },
-          // Keep awards as is
-          prev[3]
         ]);
       } catch (error) {
         console.error('Error fetching stats:', error);
@@ -107,7 +104,7 @@ const StatsSection = () => {
     <section className="py-20 bg-gradient-to-br from-blue-50 to-white">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {stats.map((stat, index) => (
               <StatItem
                 key={index}

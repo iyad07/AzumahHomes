@@ -12,8 +12,7 @@ import HomePage from "./pages/HomePage";
 import PropertiesPage from "./pages/PropertiesPage";
 import PropertyDetailPage from "./pages/PropertyDetailPage";
 import AboutPage from "./pages/AboutPage";
-import AgentsPage from "./pages/AgentsPage";
-import AgentDetailPage from "./pages/AgentDetailPage";
+
 import ContactPage from "./pages/ContactPage";
 import BlogPage from "./pages/BlogPage";
 import BlogDetailPage from "./pages/BlogDetailPage";
@@ -45,8 +44,7 @@ const App = () => (
                   <Route path="properties" element={<PropertiesPage />} />
                   <Route path="properties/:id" element={<PropertyDetailPage />} />
                   <Route path="about" element={<AboutPage />} />
-                  <Route path="agents" element={<AgentsPage />} />
-                  <Route path="agents/:id" element={<AgentDetailPage />} />
+
                   <Route path="contact" element={<ContactPage />} />
                   <Route path="blog" element={<BlogPage />} />
                   <Route path="blog/:id" element={<BlogDetailPage />} />

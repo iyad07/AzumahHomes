@@ -153,49 +153,7 @@
     @apply absolute bottom-0 left-0 p-6 text-white;
   }
 
-  .agent-card {
-    @apply bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300;
-  }
 
-  .agent-image-wrapper {
-    @apply relative overflow-hidden;
-  }
-
-  .agent-image {
-    @apply w-full aspect-[3/4] object-cover transition-transform duration-300;
-  }
-
-  .agent-card:hover .agent-image {
-    @apply scale-105;
-  }
-
-  .agent-social {
-    @apply absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-0 transition-opacity duration-300;
-  }
-
-  .agent-card:hover .agent-social {
-    @apply opacity-100;
-  }
-
-  .social-icon {
-    @apply p-2 rounded-full bg-white text-gray-800 hover:bg-real-orange hover:text-white transition-colors duration-200;
-  }
-
-  .agent-details {
-    @apply p-4 text-center;
-  }
-
-  .agent-name {
-    @apply font-semibold text-lg;
-  }
-
-  .agent-position {
-    @apply text-gray-500 text-sm mb-2;
-  }
-
-  .agent-contact {
-    @apply flex items-center justify-center gap-1 text-real-blue text-sm;
-  }
 
   .testimonial-card {
     @apply bg-white p-6 rounded-lg shadow-md;
