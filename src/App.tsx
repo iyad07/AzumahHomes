@@ -24,6 +24,7 @@ import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import AuthDebugPanel from "./components/debug/AuthDebugPanel";
 
 const queryClient = new QueryClient();
 
@@ -59,6 +60,7 @@ const App = () => (
                   <Route path="*" element={<NotFound />} />
                 </Route>
               </Routes>
+              <AuthDebugPanel />
             </BrowserRouter>
           </TooltipProvider>
         </CartProvider>

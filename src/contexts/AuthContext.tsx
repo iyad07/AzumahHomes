@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase, UserProfile } from '@/lib/supabase';
 import { toast } from 'sonner';
@@ -14,6 +14,8 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   refreshSession: () => Promise<boolean>;
   validateSession: () => Promise<boolean>;
+  updateUserRole: (userId: string, role: 'admin' | 'user') => Promise<boolean>;
+  refetchProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -118,6 +120,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const lastFetchTime = lastProfileFetch ? new Date(lastProfileFetch).getTime() : 0;
     const timeSinceLastFetch = now - lastFetchTime;
     
+    console.log('Fetching user profile:', {
+      userId,
+      isInitialLoad,
+      profileFetchAttempts,
+      timeSinceLastFetch,
+      hasProfile: !!profile
+    });
+    
     // Skip if we've exceeded max attempts and it's not an initial load
     if (!isInitialLoad && profileFetchAttempts >= MAX_PROFILE_FETCH_ATTEMPTS) {
       console.warn('Max profile fetch attempts reached, skipping');
@@ -127,7 +137,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     // Skip if we have a recent successful fetch (cache)
     if (!isInitialLoad && profile && timeSinceLastFetch < PROFILE_CACHE_DURATION) {
-      console.log('Using cached profile data');
+      console.log('Using cached profile data:', profile);
       setIsLoading(false);
       return;
     }
@@ -153,6 +163,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) {
         console.error('Error fetching user profile:', error);
         
+        // If profile doesn't exist, create a default one
+        if (error.code === 'PGRST116') {
+          console.log('Profile not found, creating default profile');
+          await createDefaultProfile(userId);
+          return;
+        }
+        
         // If it's a timeout or network error, don't reset profile immediately
         if (error.message === 'Profile fetch timeout' || error.code === 'PGRST301') {
           console.warn('Profile fetch failed, retrying may be needed');
@@ -160,6 +177,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setProfile(null);
         }
       } else {
+        console.log('Profile fetched successfully:', data);
         setProfile(data);
         setLastProfileFetch(new Date().toISOString());
         setProfileFetchAttempts(0); // Reset on success
@@ -173,6 +191,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Helper function to create default profile if it doesn't exist
+  const createDefaultProfile = async (userId: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert([{ 
+          id: userId, 
+          email: user.email || '', 
+          role: 'user',
+          full_name: user.user_metadata?.full_name || '',
+          phone: user.user_metadata?.phone || '',
+          created_at: new Date().toISOString()
+        }], { onConflict: 'id' });
+      
+      if (profileError) {
+        console.error('Error creating default profile:', profileError);
+      } else {
+        console.log('Default profile created successfully');
+        // Fetch the newly created profile
+        await fetchUserProfile(userId, true);
+      }
+    } catch (error) {
+      console.error('Exception creating default profile:', error);
     }
   };
 
@@ -304,7 +351,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return true;
   };
 
-  const isAdmin = profile?.role === 'admin';
+  // Enhanced admin check with better debugging
+  const isAdmin = React.useMemo(() => {
+    const adminStatus = profile?.role === 'admin';
+    console.log('Admin status check:', {
+      profile: profile,
+      role: profile?.role,
+      isAdmin: adminStatus,
+      userId: user?.id
+    });
+    return adminStatus;
+  }, [profile?.role, user?.id]);
 
   // Add periodic session validation
   useEffect(() => {
@@ -321,6 +378,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval);
   }, [session, user]);
 
+  // Function to update user role (admin only)
+  const updateUserRole = async (userId: string, role: 'admin' | 'user') => {
+    try {
+      if (!isAdmin) {
+        console.error('Only admins can update user roles');
+        toast.error('Unauthorized: Only admins can update user roles');
+        return false;
+      }
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({ role, updated_at: new Date().toISOString() })
+        .eq('id', userId);
+
+      if (error) {
+        console.error('Error updating user role:', error);
+        toast.error('Failed to update user role');
+        return false;
+      }
+
+      console.log(`User role updated successfully: ${userId} -> ${role}`);
+      toast.success(`User role updated to ${role}`);
+      return true;
+    } catch (error) {
+      console.error('Exception updating user role:', error);
+      toast.error('Failed to update user role');
+      return false;
+    }
+  };
+
+  // Function to manually refetch profile
+  const refetchProfile = async () => {
+    if (user) {
+      setProfileFetchAttempts(0);
+      setLastProfileFetch(null);
+      await fetchUserProfile(user.id, true);
+    }
+  };
+
   const value = {
     session,
     user,
@@ -332,6 +428,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signOut,
     refreshSession,
     validateSession,
+    updateUserRole,
+    refetchProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

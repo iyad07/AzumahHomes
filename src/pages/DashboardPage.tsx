@@ -9,6 +9,7 @@ import { useCart } from '@/contexts/CartContext';
 import { ShoppingCart } from 'lucide-react';
 import PaymentPage from './PaymentPage';
 import { formatPrice } from "@/utils/paymentCalculations";
+import UserRoleManager from '@/components/admin/UserRoleManager';
 
 // Enhanced DashboardHome component with real data
 const DashboardHome = () => {
@@ -1184,6 +1185,15 @@ const DashboardPage = () => {
                   My Listings
                 </Link>
               )}
+              {isAdmin && (
+                <Link 
+                  to="/dashboard/users" 
+                  className="block px-4 py-2 rounded-md hover:bg-gray-100 transition-colors"
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  Manage Users
+                </Link>
+              )}
               {!isAdmin && (
                 <Link 
                   to="/dashboard/favorites" 
@@ -1225,6 +1235,7 @@ const DashboardPage = () => {
             <Routes>
               <Route index element={<DashboardHome />} />
               {isAdmin && <Route path="listings" element={<MyListings />} />}
+              {isAdmin && <Route path="users" element={<UserRoleManager />} />}
               {!isAdmin && <Route path="favorites" element={<Favorites />} />}
               {!isAdmin && <Route path="cart" element={<Cart />} />}
               <Route path="settings" element={<ProfileSettings />} />

@@ -1,6 +1,6 @@
+import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useEffect, useState } from 'react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -8,10 +8,24 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps) => {
-  const { user, isAdmin, isLoading, validateSession } = useAuth();
+  const { user, isAdmin, isLoading, validateSession, profile } = useAuth();
   const location = useLocation();
   const [loadingTimeout, setLoadingTimeout] = useState(false);
   const [sessionValidated, setSessionValidated] = useState(false);
+
+  // Debug logging for role checking
+  React.useEffect(() => {
+    if (requireAdmin) {
+      console.log('ProtectedRoute admin check:', {
+        requireAdmin,
+        user: !!user,
+        profile,
+        isAdmin,
+        isLoading,
+        currentPath: location.pathname
+      });
+    }
+  }, [requireAdmin, user, profile, isAdmin, isLoading, location.pathname]);
 
   // Set a timeout for loading state to prevent infinite loading
   useEffect(() => {
@@ -71,8 +85,37 @@ const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps)
   }
 
   if (requireAdmin && !isAdmin) {
-    // Redirect to home if not an admin
-    return <Navigate to="/" replace />;
+    // Show more informative message for non-admin users
+    console.warn('Access denied: Admin role required', {
+      user: !!user,
+      profile,
+      isAdmin,
+      requireAdmin
+    });
+    
+    return (
+      <div className="pt-32 pb-20 min-h-screen flex flex-col items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Access Denied</h2>
+          <p className="text-gray-600 mb-4">You need administrator privileges to access this page.</p>
+          <p className="text-sm text-gray-500 mb-4">
+            Current role: {profile?.role || 'Unknown'}
+          </p>
+          <button 
+            onClick={() => window.history.back()} 
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mr-2"
+          >
+            Go Back
+          </button>
+          <button 
+            onClick={() => window.location.href = '/'} 
+            className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
+          >
+            Go Home
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return <>{children}</>;

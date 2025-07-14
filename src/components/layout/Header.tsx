@@ -218,8 +218,8 @@ const Header = () => {
                 </Link>
                 <Link to="/submit-blog" className="hidden lg:inline-block">
                   <Button variant="outline" className={cn(
-                    "border-2",
-                    shouldUseDarkText ? "border-real-orange text-real-orange hover:bg-real-orange hover:text-white" : "border-white text-white hover:bg-white hover:text-real-orange"
+                    "border-2 border-real-orange text-real-orange hover:bg-real-orange hover:text-white bg-white/90 backdrop-blur-sm",
+                    !shouldUseDarkText && "border-white text-white bg-white/10 hover:bg-white hover:text-real-orange"
                   )}>
                     Add Blog
                   </Button>
