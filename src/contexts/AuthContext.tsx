@@ -26,12 +26,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [profileFetchAttempts, setProfileFetchAttempts] = useState(0);
-  const [lastProfileFetch, setLastProfileFetch] = useState<string | null>(null);
 
-  // Maximum retry attempts and cache duration
+  // Maximum retry attempts
   const MAX_PROFILE_FETCH_ATTEMPTS = 3;
-  const PROFILE_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-  const PROFILE_FETCH_TIMEOUT = 10000; // 10 seconds
 
   useEffect(() => {
     let mounted = true;
@@ -45,7 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.warn('Auth initialization timeout');
             setIsLoading(false);
           }
-        }, PROFILE_FETCH_TIMEOUT);
+        }, 10000); // 10 seconds timeout
 
         // Get initial session
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -99,7 +96,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else {
           setProfile(null);
           setProfileFetchAttempts(0);
-          setLastProfileFetch(null);
           setIsLoading(false);
         }
       }
@@ -115,29 +111,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const fetchUserProfile = async (userId: string, isInitialLoad: boolean = false) => {
-    // Check if we should skip fetching due to recent cache or max attempts
-    const now = Date.now();
-    const lastFetchTime = lastProfileFetch ? new Date(lastProfileFetch).getTime() : 0;
-    const timeSinceLastFetch = now - lastFetchTime;
-    
     console.log('Fetching user profile:', {
       userId,
       isInitialLoad,
       profileFetchAttempts,
-      timeSinceLastFetch,
       hasProfile: !!profile
     });
     
-    // Skip if we've exceeded max attempts and it's not an initial load
+    // Skip if we've exceeded max attempts and it's not an initial load or forced refresh
     if (!isInitialLoad && profileFetchAttempts >= MAX_PROFILE_FETCH_ATTEMPTS) {
       console.warn('Max profile fetch attempts reached, skipping');
-      setIsLoading(false);
-      return;
-    }
-    
-    // Skip if we have a recent successful fetch (cache)
-    if (!isInitialLoad && profile && timeSinceLastFetch < PROFILE_CACHE_DURATION) {
-      console.log('Using cached profile data:', profile);
       setIsLoading(false);
       return;
     }
@@ -145,20 +128,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setProfileFetchAttempts(prev => prev + 1);
       
-      // Create a timeout promise
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Profile fetch timeout')), PROFILE_FETCH_TIMEOUT);
-      });
-      
-      // Create the fetch promise
-      const fetchPromise = supabase
+      // Fetch profile directly
+      const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
-      
-      // Race between fetch and timeout
-      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
 
       if (error) {
         console.error('Error fetching user profile:', error);
@@ -170,23 +145,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
         
-        // If it's a timeout or network error, don't reset profile immediately
-        if (error.message === 'Profile fetch timeout' || error.code === 'PGRST301') {
-          console.warn('Profile fetch failed, retrying may be needed');
-        } else {
+        // Only clear profile on initial load or if we don't have one
+        if (isInitialLoad || !profile) {
+          console.warn('Profile fetch failed, clearing profile state');
           setProfile(null);
+        } else {
+          console.warn('Profile fetch failed, keeping existing profile to prevent role switching');
         }
       } else {
         console.log('Profile fetched successfully:', data);
         setProfile(data);
-        setLastProfileFetch(new Date().toISOString());
         setProfileFetchAttempts(0); // Reset on success
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
-      
-      // Only clear profile on non-timeout errors
-      if (error instanceof Error && error.message !== 'Profile fetch timeout') {
+      // Only clear profile on initial load to prevent role switching on refresh
+      if (isInitialLoad || !profile) {
         setProfile(null);
       }
     } finally {
@@ -295,7 +269,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       setProfile(null);
       setProfileFetchAttempts(0);
-      setLastProfileFetch(null);
       
       // Sign out from Supabase
       const { error } = await supabase.auth.signOut({ scope: 'global' });
@@ -353,15 +326,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Enhanced admin check with better debugging
   const isAdmin = React.useMemo(() => {
+    // Don't determine admin status if still loading or no profile
+    if (isLoading || !profile) {
+      return false;
+    }
     const adminStatus = profile?.role === 'admin';
     console.log('Admin status check:', {
       profile: profile,
       role: profile?.role,
       isAdmin: adminStatus,
-      userId: user?.id
+      userId: user?.id,
+      isLoading
     });
     return adminStatus;
-  }, [profile?.role, user?.id]);
+  }, [profile?.role, user?.id, isLoading]);
 
   // Add periodic session validation
   useEffect(() => {
@@ -411,8 +389,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Function to manually refetch profile
   const refetchProfile = async () => {
     if (user) {
+      console.log('Manually refetching profile for user:', user.id);
+      setIsLoading(true);
       setProfileFetchAttempts(0);
-      setLastProfileFetch(null);
       await fetchUserProfile(user.id, true);
     }
   };

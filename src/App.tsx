@@ -23,7 +23,7 @@ import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
-import AuthDebugPanel from "./components/debug/AuthDebugPanel";
+
 
 const queryClient = new QueryClient();
 
@@ -54,11 +54,15 @@ const App = () => (
                     </ProtectedRoute>
                   } />
                   <Route path="submit-listing" element={<SubmitListingPage />} />
-                  <Route path="dashboard/*" element={<DashboardPage />} />
+                  <Route path="dashboard/*" element={
+                    <ProtectedRoute>
+                      <DashboardPage />
+                    </ProtectedRoute>
+                  } />
                   <Route path="*" element={<NotFound />} />
                 </Route>
               </Routes>
-              <AuthDebugPanel />
+      
             </BrowserRouter>
           </TooltipProvider>
         </CartProvider>
