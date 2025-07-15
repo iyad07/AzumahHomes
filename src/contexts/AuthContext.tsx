@@ -262,16 +262,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function signOut() {
     try {
-      setIsLoading(true);
-      
       // Clear local state immediately to prevent UI flickering
       setSession(null);
       setUser(null);
       setProfile(null);
       setProfileFetchAttempts(0);
       
-      // Sign out from Supabase
-      const { error } = await supabase.auth.signOut({ scope: 'global' });
+      // Sign out from Supabase with local scope for faster logout
+      const { error } = await supabase.auth.signOut({ scope: 'local' });
       if (error) {
         console.error('Error signing out:', error);
         // Don't throw here, as local state is already cleared
@@ -281,9 +279,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error: any) {
       console.error('Error signing out:', error);
       toast.error(error.message || 'Failed to sign out');
-    } finally {
-      setIsLoading(false);
-    }
+    } //finally {
+      //setIsLoading(false);
+   // }
   }
   
   // Add session refresh function
