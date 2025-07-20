@@ -95,13 +95,21 @@ const Header = () => {
               </>
             )}
             {user && (
-              <Link
-                to="/dashboard"
-                className="inline-flex items-center gap-2 hover:text-real-orange transition-colors"
-              >
-                <User size={16} />
-                <span>Dashboard</span>
-              </Link>
+              <>
+                <Link
+                  to="/dashboard"
+                  className="inline-flex items-center gap-2 hover:text-real-orange transition-colors"
+                >
+                  <User size={16} />
+                  <span>Dashboard</span>
+                </Link>
+                <button
+                  onClick={signOut}
+                  className="text-sm font-medium hover:text-real-orange transition-colors"
+                >
+                  Logout
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -364,6 +372,20 @@ const Header = () => {
                   Sign Up
                 </Link>
               </div>
+            </div>
+          )}
+
+          {user && (
+            <div className="mt-8 pt-6 border-t lg:hidden">
+              <button
+                onClick={() => {
+                  signOut();
+                  toggleMobileMenu();
+                }}
+                className="w-full bg-red-600 text-white py-3 px-6 rounded-md text-center font-medium hover:bg-red-700 transition-colors"
+              >
+                Logout
+              </button>
             </div>
           )}
 

@@ -1132,8 +1132,16 @@ const DashboardPage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = async () => {
-    await signOut();
-    navigate('/');
+    try {
+      console.log('Dashboard logout initiated...');
+      await signOut();
+      console.log('Dashboard logout successful, navigating to home...');
+      navigate('/');
+    } catch (error) {
+      console.error('Dashboard logout error:', error);
+      // Still navigate to home even if logout fails to prevent user from being stuck
+      navigate('/');
+    }
   };
 
   return (

@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Property } from '@/lib/supabase';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { formatPrice } from '@/utils/paymentCalculations';
 import { PropertyCategory } from '@/types/property';
@@ -24,6 +25,7 @@ const PropertyCard = ({
   imageHeight = 'h-64'
 }: PropertyCardProps) => {
   const { addToCart, isInCart } = useCart();
+  const { isAdmin } = useAuth();
   const { toast } = useToast();
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -85,7 +87,7 @@ const PropertyCard = ({
           </div>
           
           {/* Add to cart button */}
-          {showAddToCart && (
+          {showAddToCart && !isAdmin && (
             <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <Button
                 size="sm"

@@ -13,20 +13,6 @@ const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps)
   const [loadingTimeout, setLoadingTimeout] = useState(false);
   const [sessionValidated, setSessionValidated] = useState(false);
 
-  // Debug logging for role checking
-  React.useEffect(() => {
-    if (requireAdmin) {
-      console.log('ProtectedRoute admin check:', {
-        requireAdmin,
-        user: !!user,
-        profile,
-        isAdmin,
-        isLoading,
-        currentPath: location.pathname
-      });
-    }
-  }, [requireAdmin, user, profile, isAdmin, isLoading, location.pathname]);
-
   // Set a timeout for loading state to prevent infinite loading
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -86,13 +72,6 @@ const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps)
 
   if (requireAdmin && !isAdmin) {
     // Show more informative message for non-admin users
-    console.warn('Access denied: Admin role required', {
-      user: !!user,
-      profile,
-      isAdmin,
-      requireAdmin
-    });
-    
     return (
       <div className="pt-32 pb-20 min-h-screen flex flex-col items-center justify-center">
         <div className="text-center">

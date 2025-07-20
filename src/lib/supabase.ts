@@ -16,12 +16,12 @@ export interface UserProfile {
   id: string;
   email: string;
   role: UserRole;
+  full_name: string | null;
+  phone: string | null;
+  address: string | null;
+  bio: string | null;
   created_at: string;
-  full_name?: string;  // Added field for user's full name
-  phone?: string;      // Added field for user's phone number
-  address?: string;    // Keeping existing optional fields
-  bio?: string;        // Keeping existing optional fields
-  updated_at?: string; // Keeping existing optional fields
+  updated_at: string;
 }
 
 export interface Property {
@@ -34,10 +34,12 @@ export interface Property {
   beds: number;
   baths: number;
   sqft: number;
+  type: string;
   tag: string;
   rating: number;
   isPopular: boolean;
   isNew: boolean;
   created_at: string;
+  updated_at: string;
   user_id: string;
 }
