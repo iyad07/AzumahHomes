@@ -50,34 +50,34 @@ const Header = () => {
   };
 
   return (
-      <header
-    className={cn(
+    <header
+      className={cn(
       "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
       // Mobile: completely solid background for visibility
       "lg:bg-white/20 lg:backdrop-blur-md bg-white",
-      isScrolled ? "bg-white shadow-md py-3" : "py-5"
+      isScrolled ? "bg-white shadow-md py-2" : "py-3"
     )}
   >
       <div className="px-0.5">
         {/* Top header with contact info */}
         <div
           className={cn(
-            "hidden lg:flex justify-between items-center text-sm mb-4 transition-opacity duration-300 border-b-[0.5px] border-black/30 pb-2",
-            isScrolled ? "opacity-0 pointer-events-none h-0 overflow-hidden" : shouldUseDarkText ? "text-black" : "text-white"
+            "hidden lg:flex justify-between items-center text-sm mb-2 transition-opacity duration-300 border-b-[0.5px] border-white/30 pb-1 text-white",
+            isScrolled ? "opacity-0 pointer-events-none h-0 overflow-hidden" : ""
           )}
         >
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             <div className="flex items-center gap-1">
-              <Phone size={16} className="ml-3"/>
+              <Phone size={14} className="ml-3"/>
               <span>0551319363</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Mail size={16} />
+            <div className="flex items-center gap-1">
+              <Mail size={14} />
               <span>azumahhomes@gmail.com</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-6 mr-4">
+          <div className="flex items-center gap-4 mr-4">
             {!user && (
               <>
                 <Link
@@ -115,19 +115,18 @@ const Header = () => {
         </div>
 
         {/* Main navigation */}
-        <div className="flex justify-between items-center px-4 py-2">
+        <div className="flex justify-between items-center px-4 py-1">
         <Link
           to="/"
           className="flex items-center gap-2"
         >
-          <img src="/logo.png" alt="Logo" className="w-12 h-12 lg:w-20 lg:h-20" />
+          <img src="/logo.png" alt="Logo" className="h-10 lg:h-10 w-auto object-contain" />
           <div className="leading-tight">
             <div
               className={cn(
-                "text-2xl lg:text-5xl font-extrabold tracking-tight hover:text-blue-700 transition-colors duration-300",
-                // Always dark on mobile for visibility, conditional on desktop
-                "text-black lg:text-black lg:group-hover:text-blue-700",
-                !shouldUseDarkText && "lg:text-white"
+                "text-xl lg:text-3xl font-extrabold tracking-tight hover:text-blue-700 transition-colors duration-300",
+                // Always dark on mobile for visibility, white on desktop
+                "text-black lg:text-white lg:group-hover:text-blue-700"
               )}
             >
               Azumah Homes
@@ -136,13 +135,13 @@ const Header = () => {
         </Link>
 
           {/* Desktop navigation */}
-          <nav className="hidden lg:flex items-center justify-end flex-1 space-x-9">
+          <nav className="hidden lg:flex items-center justify-end flex-1 space-x-6">
             <NavLink
               to="/"
               className={({ isActive }) =>
                 cn(
                   "font-medium transition-colors",
-                  isActive ? "text-real-orange" : shouldUseDarkText ? "text-black hover:text-real-orange" : "text-white hover:text-real-orange"
+                  isActive ? "text-real-orange" : "text-white hover:text-real-orange"
                 )
               }
             >
@@ -153,7 +152,7 @@ const Header = () => {
               className={({ isActive }) =>
                 cn(
                   "font-medium transition-colors",
-                  isActive ? "text-real-orange" : shouldUseDarkText ? "text-black hover:text-real-orange" : "text-white hover:text-real-orange"
+                  isActive ? "text-real-orange" : "text-white hover:text-real-orange"
                 )
               }
             >
@@ -165,7 +164,7 @@ const Header = () => {
               className={({ isActive }) =>
                 cn(
                   "font-medium transition-colors",
-                  isActive ? "text-real-orange" : shouldUseDarkText ? "text-black hover:text-real-orange" : "text-white hover:text-real-orange"
+                  isActive ? "text-real-orange" : "text-white hover:text-real-orange"
                 )
               }
             >
@@ -176,7 +175,7 @@ const Header = () => {
               className={({ isActive }) =>
                 cn(
                   "font-medium transition-colors",
-                  isActive ? "text-real-orange" : shouldUseDarkText ? "text-black hover:text-real-orange" : "text-white hover:text-real-orange"
+                  isActive ? "text-real-orange" : "text-white hover:text-real-orange"
                 )
               }
             >
@@ -187,7 +186,7 @@ const Header = () => {
               className={({ isActive }) =>
                 cn(
                   "font-medium transition-colors",
-                  isActive ? "text-real-orange" : shouldUseDarkText ? "text-black hover:text-real-orange" : "text-white hover:text-real-orange"
+                  isActive ? "text-real-orange" : "text-white hover:text-real-orange"
                 )
               }
             >
