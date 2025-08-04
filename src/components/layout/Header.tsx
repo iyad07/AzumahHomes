@@ -24,6 +24,10 @@ const Header = () => {
   const isHomePage = pathname === '/';
   // On mobile, always use dark text for visibility. On desktop, use conditional logic
   const shouldUseDarkText = !isHomePage || isScrolled;
+  
+  // Pages with white backgrounds that need dark text
+  const whiteBackgroundPages = ['/properties', '/about', '/blog', '/contact', '/dashboard', '/agents'];
+  const isWhiteBackgroundPage = whiteBackgroundPages.includes(pathname);
 
   // Handle scroll effect for header
   useEffect(() => {
@@ -52,11 +56,13 @@ const Header = () => {
   return (
     <header
       className={cn(
-      "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-      // Mobile: completely solid background for visibility
-      "lg:bg-white/20 lg:backdrop-blur-md bg-white",
-      isScrolled ? "bg-white shadow-md py-2" : "py-3"
-    )}
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+        // Glassy backdrop blur effect
+        isWhiteBackgroundPage 
+          ? "bg-white/80 backdrop-blur-lg shadow-lg border-b border-white/20" 
+          : "lg:bg-white/10 lg:backdrop-blur-xl bg-white/90 backdrop-blur-lg",
+        isScrolled ? "bg-white/30 backdrop-blur-2xl shadow-xl py-2" : "py-3"
+      )}
   >
       <div className="px-0.5">
         {/* Top header with contact info */}
@@ -125,8 +131,10 @@ const Header = () => {
             <div
               className={cn(
                 "text-xl lg:text-3xl font-extrabold tracking-tight hover:text-blue-700 transition-colors duration-300",
-                // Always dark on mobile for visibility, white on desktop
-                "text-black lg:text-white lg:group-hover:text-blue-700"
+                // Always dark on mobile for visibility, conditional on desktop
+                isWhiteBackgroundPage 
+                  ? "text-black" 
+                  : "text-black lg:text-white lg:group-hover:text-blue-700"
               )}
             >
               Azumah Homes
@@ -141,7 +149,11 @@ const Header = () => {
               className={({ isActive }) =>
                 cn(
                   "font-medium transition-colors",
-                  isActive ? "text-real-orange" : "text-white hover:text-real-orange"
+                  isActive 
+                    ? "text-real-orange" 
+                    : isWhiteBackgroundPage 
+                      ? "text-black hover:text-real-orange" 
+                      : "text-white hover:text-real-orange"
                 )
               }
             >
@@ -152,7 +164,11 @@ const Header = () => {
               className={({ isActive }) =>
                 cn(
                   "font-medium transition-colors",
-                  isActive ? "text-real-orange" : "text-white hover:text-real-orange"
+                  isActive 
+                    ? "text-real-orange" 
+                    : isWhiteBackgroundPage 
+                      ? "text-black hover:text-real-orange" 
+                      : "text-white hover:text-real-orange"
                 )
               }
             >
@@ -164,7 +180,11 @@ const Header = () => {
               className={({ isActive }) =>
                 cn(
                   "font-medium transition-colors",
-                  isActive ? "text-real-orange" : "text-white hover:text-real-orange"
+                  isActive 
+                    ? "text-real-orange" 
+                    : isWhiteBackgroundPage 
+                      ? "text-black hover:text-real-orange" 
+                      : "text-white hover:text-real-orange"
                 )
               }
             >
@@ -175,7 +195,11 @@ const Header = () => {
               className={({ isActive }) =>
                 cn(
                   "font-medium transition-colors",
-                  isActive ? "text-real-orange" : "text-white hover:text-real-orange"
+                  isActive 
+                    ? "text-real-orange" 
+                    : isWhiteBackgroundPage 
+                      ? "text-black hover:text-real-orange" 
+                      : "text-white hover:text-real-orange"
                 )
               }
             >
@@ -186,7 +210,11 @@ const Header = () => {
               className={({ isActive }) =>
                 cn(
                   "font-medium transition-colors",
-                  isActive ? "text-real-orange" : "text-white hover:text-real-orange"
+                  isActive 
+                    ? "text-real-orange" 
+                    : isWhiteBackgroundPage 
+                      ? "text-black hover:text-real-orange" 
+                      : "text-white hover:text-real-orange"
                 )
               }
             >
@@ -199,8 +227,7 @@ const Header = () => {
               <Link to="/dashboard/favorites" className={cn(
                 "hidden lg:flex items-center gap-1 px-3 py-2",
                 // Always dark on mobile for visibility, conditional on desktop
-                "text-black",
-                !shouldUseDarkText && "lg:text-white"
+                isWhiteBackgroundPage ? "text-black" : "text-black lg:text-white"
               )}>
                 <Heart size={20} />
               </Link>
@@ -216,7 +243,7 @@ const Header = () => {
                 <Link to="/submit-blog" className="hidden lg:inline-block">
                   <Button variant="outline" className={cn(
                     "border-2 border-real-orange text-real-orange hover:bg-real-orange hover:text-white bg-white/90 backdrop-blur-sm",
-                    !shouldUseDarkText && "border-white text-white bg-white/10 hover:bg-white hover:text-real-orange"
+                    !isWhiteBackgroundPage && "border-white text-white bg-white/10 hover:bg-white hover:text-real-orange"
                   )}>
                     Add Blog
                   </Button>
