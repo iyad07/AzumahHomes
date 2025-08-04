@@ -27,7 +27,7 @@ const Header = () => {
   
   // Pages with white backgrounds that need dark text
   const whiteBackgroundPages = ['/properties', '/about', '/blog', '/contact', '/dashboard', '/agents'];
-  const isWhiteBackgroundPage = whiteBackgroundPages.includes(pathname);
+  const isWhiteBackgroundPage = whiteBackgroundPages.includes(pathname) || pathname.startsWith('/properties/');
 
   // Handle scroll effect for header
   useEffect(() => {
@@ -61,7 +61,7 @@ const Header = () => {
         isWhiteBackgroundPage 
           ? "bg-white/80 backdrop-blur-lg shadow-lg border-b border-white/20" 
           : "lg:bg-white/10 lg:backdrop-blur-xl bg-white/90 backdrop-blur-lg",
-        isScrolled ? "bg-white/30 backdrop-blur-2xl shadow-xl py-2" : "py-3"
+        isScrolled ? "bg-white/70 backdrop-blur-2xl shadow-xl py-2" : "py-3"
       )}
   >
       <div className="px-0.5">
