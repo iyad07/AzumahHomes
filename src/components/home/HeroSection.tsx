@@ -73,9 +73,9 @@ const HeroSection = () => {
         <div className="flex justify-center mb-6 ">
           <Tabs defaultValue="general" className="bg-white/50 backdrop-blur-md p-1 rounded-full shadow-lg">
             <TabsList className="grid-row grid-cols-3 gap-1 bg-transparent">
-              <TabsTrigger value="general" className="px-6 py-2 text-white data-[state=active]:bg-orange-500 rounded-full">General</TabsTrigger>
-              <TabsTrigger value="house" className="px-6 py-2 text-white data-[state=active]:bg-orange-500 rounded-full">House</TabsTrigger>
-              <TabsTrigger value="apartment" className="px-6 py-2 text-white data-[state=active]:bg-orange-500 rounded-full">Apartment</TabsTrigger>
+              <TabsTrigger value="general" className="px-6 py-2 text-white data-[state=active]:bg-orange-500 data-[state=active]:text-white rounded-full transition-all duration-300 ease-in-out hover:bg-orange-400 hover:scale-105 transform">General</TabsTrigger>
+              <TabsTrigger value="house" className="px-6 py-2 text-white data-[state=active]:bg-orange-500 data-[state=active]:text-white rounded-full transition-all duration-300 ease-in-out hover:bg-orange-400 hover:scale-105 transform">House</TabsTrigger>
+              <TabsTrigger value="apartment" className="px-6 py-2 text-white data-[state=active]:bg-orange-500 data-[state=active]:text-white rounded-full transition-all duration-300 ease-in-out hover:bg-orange-400 hover:scale-105 transform">Apartment</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
