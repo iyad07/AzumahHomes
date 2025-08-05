@@ -8,7 +8,7 @@ interface CartItem {
   user_id: string;
   property_id: number;
   created_at: string;
-  property: Property;
+  property: Property | null;
 }
 
 interface CartContextType {
@@ -41,19 +41,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     try {
       setLoading(true);
-      // First get the cart items
       const { data: cartData, error: cartError } = await supabase
-        .from('user_cart')
+        .from('cart_items')
         .select('*')
         .eq('user_id', user.id);
 
       if (cartError) throw cartError;
 
       if (cartData && cartData.length > 0) {
-        // Get all property IDs from cart
         const propertyIds = cartData.map(item => item.property_id);
-        
-        // Fetch the property details for all items in the cart
+
         const { data: propertiesData, error: propertiesError } = await supabase
           .from('properties')
           .select('*')
@@ -61,12 +58,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
         if (propertiesError) throw propertiesError;
 
-        // Combine cart items with their property details
         const cartItemsWithDetails = cartData.map(cartItem => {
-          const property = propertiesData?.find(p => p.id === cartItem.property_id);
+          const property = propertiesData?.find(p => p.id === cartItem.property_id) || null;
           return {
             ...cartItem,
-            property: property as Property
+            property
           };
         });
 
@@ -74,9 +70,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       } else {
         setCartItems([]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching cart items:', error);
-      toast.error('Failed to load cart items');
+      toast.error(error.message || 'Failed to load cart items');
     } finally {
       setLoading(false);
     }
@@ -89,15 +85,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      // Check if the property is already in the cart
       if (isInCart(propertyId)) {
         toast.info('This property is already in your cart');
         return;
       }
 
-      // Add to cart in Supabase
       const { error } = await supabase
-        .from('user_cart')
+        .from('cart_items')
         .insert([{
           user_id: user.id,
           property_id: propertyId,
@@ -106,12 +100,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw error;
 
-      // Refresh cart items
       await fetchCartItems();
       toast.success('Property added to cart');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding to cart:', error);
-      toast.error('Failed to add property to cart');
+      toast.error(error.message || 'Failed to add property to cart');
     }
   }
 
@@ -120,19 +113,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const { error } = await supabase
-        .from('user_cart')
+        .from('cart_items')
         .delete()
         .eq('user_id', user.id)
         .eq('property_id', propertyId);
 
       if (error) throw error;
 
-      // Update the UI by removing the property from the list
       setCartItems(cartItems.filter(item => item.property_id !== propertyId));
       toast.success('Property removed from cart');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error removing from cart:', error);
-      toast.error('Failed to remove property from cart');
+      toast.error(error.message || 'Failed to remove property from cart');
     }
   }
 
@@ -141,7 +133,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const { error } = await supabase
-        .from('user_cart')
+        .from('cart_items')
         .delete()
         .eq('user_id', user.id);
 
@@ -149,9 +141,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
       setCartItems([]);
       toast.success('Cart cleared');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error clearing cart:', error);
-      toast.error('Failed to clear cart');
+      toast.error(error.message || 'Failed to clear cart');
     }
   }
 
