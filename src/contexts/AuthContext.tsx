@@ -28,10 +28,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profileFetchAttempts, setProfileFetchAttempts] = useState(0);
   const [lastProfileFetch, setLastProfileFetch] = useState<string | null>(null);
 
-  // Maximum retry attempts and cache duration
-  const MAX_PROFILE_FETCH_ATTEMPTS = 3;
-  const PROFILE_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-  const PROFILE_FETCH_TIMEOUT = 10000; // 10 seconds
+  const MAX_PROFILE_FETCH_ATTEMPTS = 5;
+  const PROFILE_CACHE_DURATION = 5 * 60 * 1000;
+  const PROFILE_FETCH_TIMEOUT = 20000;
+
+  const retryFetch = async <T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> => {
+    for (let i = 0; i < retries; i++) {
+      try {
+        return await fn();
+      } catch (err) {
+        console.warn(`Retry ${i + 1} failed:`, err);
+        if (i === retries - 1) throw err;
+        await new Promise(res => setTimeout(res, delay * (i + 1)));
+      }
+    }
+    throw new Error("All retries failed");
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -39,7 +51,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const initializeAuth = async () => {
       try {
-        // Set a timeout for the entire initialization
         timeoutId = setTimeout(() => {
           if (mounted) {
             console.warn('Auth initialization timeout');
@@ -47,21 +58,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }, PROFILE_FETCH_TIMEOUT);
 
-        // Get initial session
         const { data: { session }, error } = await supabase.auth.getSession();
-        
+
         if (error) {
           console.error('Error getting session:', error);
-          if (mounted) {
-            setIsLoading(false);
-          }
+          if (mounted) setIsLoading(false);
           return;
         }
 
         if (mounted) {
           setSession(session);
           setUser(session?.user ?? null);
-          
+
           if (session?.user) {
             await fetchUserProfile(session.user.id, true);
           } else {
@@ -70,30 +78,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
-        if (mounted) {
-          setIsLoading(false);
-        }
+        if (mounted) setIsLoading(false);
       } finally {
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-        }
+        if (timeoutId) clearTimeout(timeoutId);
       }
     };
 
     initializeAuth();
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return;
-        
+
         console.log('Auth state change:', event, !!session);
-        
         setSession(session);
         setUser(session?.user ?? null);
-        
+
         if (session?.user) {
-          // Reset attempts on new session
           setProfileFetchAttempts(0);
           await fetchUserProfile(session.user.id, false);
         } else {
@@ -107,35 +108,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       mounted = false;
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
+      if (timeoutId) clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
   }, []);
 
   const fetchUserProfile = async (userId: string, isInitialLoad: boolean = false) => {
-    // Check if we should skip fetching due to recent cache or max attempts
     const now = Date.now();
     const lastFetchTime = lastProfileFetch ? new Date(lastProfileFetch).getTime() : 0;
     const timeSinceLastFetch = now - lastFetchTime;
-    
-    console.log('Fetching user profile:', {
-      userId,
-      isInitialLoad,
-      profileFetchAttempts,
-      timeSinceLastFetch,
-      hasProfile: !!profile
-    });
-    
-    // Skip if we've exceeded max attempts and it's not an initial load
+
     if (!isInitialLoad && profileFetchAttempts >= MAX_PROFILE_FETCH_ATTEMPTS) {
       console.warn('Max profile fetch attempts reached, skipping');
       setIsLoading(false);
       return;
     }
-    
-    // Skip if we have a recent successful fetch (cache)
+
     if (!isInitialLoad && profile && timeSinceLastFetch < PROFILE_CACHE_DURATION) {
       console.log('Using cached profile data:', profile);
       setIsLoading(false);
@@ -144,33 +132,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       setProfileFetchAttempts(prev => prev + 1);
-      
-      // Create a timeout promise
+
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error('Profile fetch timeout')), PROFILE_FETCH_TIMEOUT);
       });
-      
-      // Create the fetch promise
-      const fetchPromise = supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-      
-      // Race between fetch and timeout
+
+      const fetchPromise = retryFetch(() =>
+        supabase.from('profiles').select('*').eq('id', userId).single()
+      );
+
       const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
 
       if (error) {
         console.error('Error fetching user profile:', error);
-        
-        // If profile doesn't exist, create a default one
+
         if (error.code === 'PGRST116') {
           console.log('Profile not found, creating default profile');
           await createDefaultProfile(userId);
           return;
         }
-        
-        // If it's a timeout or network error, don't reset profile immediately
+
         if (error.message === 'Profile fetch timeout' || error.code === 'PGRST301') {
           console.warn('Profile fetch failed, retrying may be needed');
         } else {
@@ -180,12 +161,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('Profile fetched successfully:', data);
         setProfile(data);
         setLastProfileFetch(new Date().toISOString());
-        setProfileFetchAttempts(0); // Reset on success
+        setProfileFetchAttempts(0);
       }
     } catch (error) {
-      console.error('Error fetching user profile:', error);
-      
-      // Only clear profile on non-timeout errors
+      console.error('Error fetching user profile (outer):', error);
       if (error instanceof Error && error.message !== 'Profile fetch timeout') {
         setProfile(null);
       }
@@ -194,7 +173,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Helper function to create default profile if it doesn't exist
   const createDefaultProfile = async (userId: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -210,12 +188,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           phone: user.user_metadata?.phone || '',
           created_at: new Date().toISOString()
         }], { onConflict: 'id' });
-      
+
       if (profileError) {
         console.error('Error creating default profile:', profileError);
       } else {
         console.log('Default profile created successfully');
-        // Fetch the newly created profile
         await fetchUserProfile(userId, true);
       }
     } catch (error) {
@@ -236,7 +213,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function signUp(email: string, password: string, fullName?: string, phone?: string) {
     try {
-      // First, sign up the user with Supabase Auth
       const { error, data } = await supabase.auth.signUp({ 
         email, 
         password,
@@ -247,10 +223,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
       });
-      
+
       if (error) throw error;
-      
-      // If we have a user, create their profile
+
       if (data.user) {
         try {
           const { error: profileError } = await supabase
@@ -263,21 +238,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               phone: phone || '',
               created_at: new Date().toISOString()
             }], { onConflict: 'id' });
-          
+
           if (profileError) {
             console.error('Error creating profile:', profileError);
-            // We don't throw here because the auth was successful
             toast.error('Account created but profile setup failed. Please contact support.');
             return;
           }
         } catch (profileErr) {
           console.error('Exception creating profile:', profileErr);
-          // We don't throw here because the auth was successful
           toast.error('Account created but profile setup failed. Please contact support.');
           return;
         }
       }
-      
+
       toast.success('Account created successfully. Please check your email for verification.');
     } catch (error: any) {
       console.error('Signup error:', error);
@@ -289,21 +262,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function signOut() {
     try {
       setIsLoading(true);
-      
-      // Clear local state immediately to prevent UI flickering
       setSession(null);
       setUser(null);
       setProfile(null);
       setProfileFetchAttempts(0);
       setLastProfileFetch(null);
-      
-      // Sign out from Supabase
+
       const { error } = await supabase.auth.signOut({ scope: 'global' });
-      if (error) {
-        console.error('Error signing out:', error);
-        // Don't throw here, as local state is already cleared
-      }
-      
+      if (error) console.error('Error signing out:', error);
       toast.success('Signed out successfully');
     } catch (error: any) {
       console.error('Error signing out:', error);
@@ -312,8 +278,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
     }
   }
-  
-  // Add session refresh function
+
   const refreshSession = async () => {
     try {
       const { data: { session }, error } = await supabase.auth.refreshSession();
@@ -321,37 +286,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error('Error refreshing session:', error);
         return false;
       }
-      
       if (session) {
         setSession(session);
         setUser(session.user);
         return true;
       }
-      
       return false;
     } catch (error) {
       console.error('Error refreshing session:', error);
       return false;
     }
   };
-  
-  // Add session validation
+
   const validateSession = async () => {
     if (!session) return false;
-    
     const now = Math.floor(Date.now() / 1000);
     const expiresAt = session.expires_at || 0;
-    
-    // If session expires in less than 5 minutes, refresh it
     if (expiresAt - now < 300) {
       console.log('Session expiring soon, refreshing...');
       return await refreshSession();
     }
-    
     return true;
   };
 
-  // Enhanced admin check with better debugging
   const isAdmin = React.useMemo(() => {
     const adminStatus = profile?.role === 'admin';
     console.log('Admin status check:', {
@@ -363,22 +320,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return adminStatus;
   }, [profile?.role, user?.id]);
 
-  // Add periodic session validation
   useEffect(() => {
     if (!session || !user) return;
-    
     const interval = setInterval(async () => {
       const isValid = await validateSession();
       if (!isValid) {
         console.warn('Session validation failed, signing out');
         await signOut();
       }
-    }, 60000); // Check every minute
-    
+    }, 60000);
     return () => clearInterval(interval);
   }, [session, user]);
 
-  // Function to update user role (admin only)
   const updateUserRole = async (userId: string, role: 'admin' | 'user') => {
     try {
       if (!isAdmin) {
@@ -386,7 +339,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         toast.error('Unauthorized: Only admins can update user roles');
         return false;
       }
-
       const { error } = await supabase
         .from('profiles')
         .update({ role, updated_at: new Date().toISOString() })
@@ -397,7 +349,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         toast.error('Failed to update user role');
         return false;
       }
-
       console.log(`User role updated successfully: ${userId} -> ${role}`);
       toast.success(`User role updated to ${role}`);
       return true;
@@ -408,7 +359,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Function to manually refetch profile
   const refetchProfile = async () => {
     if (user) {
       setProfileFetchAttempts(0);
