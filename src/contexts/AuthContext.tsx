@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const PROFILE_CACHE_DURATION = 5 * 60 * 1000;
   const PROFILE_FETCH_TIMEOUT = 20000;
 
-  const retryFetch = async <T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> => {
+  async function retryFetch<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> {
     for (let i = 0; i < retries; i++) {
       try {
         return await fn();
@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
     throw new Error("All retries failed");
-  };
+  }
 
   useEffect(() => {
     let mounted = true;
