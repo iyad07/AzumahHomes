@@ -22,6 +22,7 @@ import DashboardPage from "./pages/DashboardPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import NotFound from "./pages/NotFound";
+import ImageUploadDemoPage from "./pages/ImageUploadDemoPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import AuthDebugPanel from "./components/debug/AuthDebugPanel";
 
@@ -54,6 +55,7 @@ const App = () => (
                     </ProtectedRoute>
                   } />
                   <Route path="submit-listing" element={<SubmitListingPage />} />
+                  <Route path="image-upload-demo" element={<ImageUploadDemoPage />} />
                   <Route path="dashboard/*" element={<DashboardPage />} />
                   <Route path="*" element={<NotFound />} />
                 </Route>

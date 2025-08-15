@@ -15,6 +15,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import SEO from '@/components/SEO';
+import SupabaseImageUpload from '@/components/ui/supabase-image-upload';
 
 // Environment validation and debugging
 const checkEnvironment = () => {
@@ -64,7 +65,7 @@ const formSchema = z.object({
   baths: z.coerce.number().positive({ message: 'Number of baths must be a positive number' }),
   sqft: z.coerce.number().int().positive({ message: 'Square footage must be a positive integer' }),
   tag: z.string().min(1, { message: 'Property tag is required' }),
-  image: z.string().url({ message: 'Please enter a valid image URL' }),
+  image: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -469,13 +470,27 @@ const SubmitListingPage = () => {
                     name="image"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Image URL</FormLabel>
                         <FormControl>
-                          <Input placeholder="https://example.com/image.jpg" {...field} />
+                          <SupabaseImageUpload
+                            value={field.value}
+                            onChange={field.onChange}
+                            onError={(error) => {
+                              toast({
+                                title: 'Upload Error',
+                                description: error,
+                                variant: 'destructive',
+                              });
+                            }}
+                            label="Property Image"
+                            description="Upload a high-quality image of your property. Supported formats: JPEG, PNG, WebP up to 5MB."
+                            required={false}
+                            disabled={isSubmitting}
+                            maxSize={5}
+                            acceptedTypes={['image/jpeg', 'image/jpg', 'image/png', 'image/webp']}
+                            bucketName="property-images"
+                            folderPath="properties"
+                          />
                         </FormControl>
-                        <FormDescription>
-                          Enter a URL for the property image. For a real application, you would implement file uploads.
-                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
