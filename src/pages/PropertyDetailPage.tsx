@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { MapPin, Bed, Bath, Square, Star, ArrowLeft, ShoppingCart, Heart, Calendar, Maximize, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { MapPin, Bed, Bath, Square, Star, ArrowLeft, ShoppingCart, Heart, Calendar, Maximize, ChevronLeft, ChevronRight, X, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -84,6 +84,41 @@ const PropertyDetailPage = () => {
       // You could also redirect to login page here
       // navigate('/login');
     }
+  };
+
+  const handleWhatsAppContact = () => {
+    if (!property) return;
+    
+    let message = `Hi! I'm interested in this property:\n\n`;
+    message += `🏠 *${property.title}*\n`;
+    message += `📍 Location: ${property.location}\n`;
+    message += `💰 Price: ${formatPrice(property.price)}\n`;
+    
+    if (property.beds > 0) {
+      message += `🛏️ Bedrooms: ${property.beds}\n`;
+    }
+    message += `🚿 Bathrooms: ${property.baths}\n`;
+    message += `📐 Size: ${property.sqft} sq ft\n`;
+    
+    if (property.tag === PropertyCategory.FOR_SALE) {
+      message += `\n💳 *Payment Plan Details:*\n`;
+      message += `• Initial Payment (50%): ${formatPrice(property.price / 2)}\n`;
+      message += `• Selected Plan: ${selectedPaymentPeriod} months\n`;
+      message += `• Monthly Payment: ${formatPrice((property.price / 2) / selectedPaymentPeriod)}\n`;
+    }
+    
+    const propertyUrl = window.location.href
+      .replace('http://localhost:5173', 'https://azumah-homes-mu.vercel.app')
+      .replace('https://localhost:5173', 'https://azumah-homes-mu.vercel.app')
+      .replace('http://localhost:8081', 'https://azumah-homes-mu.vercel.app')
+      .replace('https://localhost:8081', 'https://azumah-homes-mu.vercel.app');
+    message += `\n🔗 *Property Link:*\n${propertyUrl}\n`;
+    message += `\nCould you please provide more information about this property?`;
+    
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/233551319363?text=${encodedMessage}`;
+    
+    window.open(whatsappUrl, '_blank');
   };
 
   if (loading) {
@@ -299,6 +334,14 @@ const PropertyDetailPage = () => {
                 className="flex-1 bg-real-orange text-white py-2 md:py-3 px-4 md:px-6 rounded-md hover:bg-orange-600 transition-colors text-center font-medium text-sm md:text-base"
               >
                 Contact Agent
+              </button>
+              
+              <button 
+                onClick={handleWhatsAppContact}
+                className="flex-1 bg-green-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-md hover:bg-green-600 transition-colors text-center font-medium text-sm md:text-base"
+              >
+                <MessageCircle className="inline-block mr-2" size={16} />
+                WhatsApp
               </button>
               
               {user && !isAdmin && (
