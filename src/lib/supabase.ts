@@ -36,6 +36,7 @@ export interface Property {
   baths: number;
   sqft: number;
   tag: string;
+  maxPaymentPlanMonths?: number;
   rating: number;
   isPopular: boolean;
   isNew: boolean;

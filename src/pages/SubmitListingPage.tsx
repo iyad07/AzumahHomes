@@ -66,6 +66,7 @@ const formSchema = z.object({
   baths: z.coerce.number().positive({ message: 'Number of baths must be a positive number' }),
   sqft: z.coerce.number().int().positive({ message: 'Square footage must be a positive integer' }),
   tag: z.string().min(1, { message: 'Property tag is required' }),
+  maxPaymentPlanMonths: z.coerce.number().int().min(1).max(60).optional(), // Maximum payment plan time period in months
   image: z.string().optional(), // Keep for backward compatibility
   images: z.array(z.string()).optional(), // New field for multiple images
 });
@@ -233,6 +234,7 @@ const SubmitListingPage = () => {
         baths: Number(values.baths) || 1,
         sqft: Number(values.sqft) || 0,
         tag: values.tag || 'For Sale',
+        maxPaymentPlanMonths: values.maxPaymentPlanMonths || null,
         image: images.length > 0 ? images[0] : (values.image?.trim() || ''), // Set first image as main image for backward compatibility
         images: images,
         rating: 4.5, // Default rating
@@ -432,7 +434,51 @@ const SubmitListingPage = () => {
                     />
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Maximum Payment Plan Time Period - Only for For Sale properties */}
+                  {form.watch('tag') === 'For Sale' && (
+                    <FormField
+                      control={form.control}
+                      name="maxPaymentPlanMonths"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Maximum Payment Plan Time Period (Months)</FormLabel>
+                          <FormControl>
+                            <Select 
+                              onValueChange={field.onChange} 
+                              defaultValue={field.value?.toString()}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select maximum payment plan period" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="4">4 months</SelectItem>
+                                <SelectItem value="8">8 months</SelectItem>
+                                <SelectItem value="12">12 months</SelectItem>
+                                <SelectItem value="16">16 months</SelectItem>
+                                <SelectItem value="20">20 months</SelectItem>
+                                <SelectItem value="24">24 months</SelectItem>
+                                <SelectItem value="28">28 months</SelectItem>
+                                <SelectItem value="32">32 months</SelectItem>
+                                <SelectItem value="36">36 months</SelectItem>
+                                <SelectItem value="40">40 months</SelectItem>
+                                <SelectItem value="44">44 months</SelectItem>
+                                <SelectItem value="48">48 months</SelectItem>
+                                <SelectItem value="52">52 months</SelectItem>
+                                <SelectItem value="56">56 months</SelectItem>
+                                <SelectItem value="60">60 months</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                          <FormDescription>
+                            Set the maximum time period customers can choose for their payment plan. This will limit the payment plan options available to buyers.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                   
+                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <FormField
                       control={form.control}
                       name="beds"

@@ -42,6 +42,16 @@ const PropertyDetailPage = () => {
     }
   }, [error, toast]);
 
+  // Update selectedPaymentPeriod when property loads
+  useEffect(() => {
+    if (property && property.tag === PropertyCategory.FOR_SALE) {
+      const maxMonths = property.maxPaymentPlanMonths || 12;
+      // Set to the middle option (50% of max months, minimum 6)
+      const defaultPeriod = Math.max(6, Math.round(maxMonths * 0.5));
+      setSelectedPaymentPeriod(defaultPeriod);
+    }
+  }, [property]);
+
   // Get all images for this property
   const propertyImages = property ? getPropertyImages(property) : [];
   const hasMultipleImages = propertyImages.length > 1;
@@ -290,31 +300,57 @@ const PropertyDetailPage = () => {
                 </div>
                 
                 <p className="text-gray-600 text-sm md:text-base mb-4">
-                  Choose your preferred payment period for the remaining 50% ({formatPrice(property.price / 2)})
+                  Choose your preferred payment period for the remaining 50% ({formatPrice((property.price + 50000) / 2)})
                 </p>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
-                  {[4, 8, 12].map((months) => {
-                    const monthlyPayment = (property.price / 2) / months;
-                    const isSelected = selectedPaymentPeriod === months;
+                  {(() => {
+                    // Generate payment plan options based on maxPaymentPlanMonths
+                    const maxMonths = property.maxPaymentPlanMonths || 12; // Default to 12 if not set
+                    const options = [];
                     
-                    return (
-                      <button
-                        key={months}
-                        onClick={() => setSelectedPaymentPeriod(months)}
-                        className={`p-3 md:p-4 rounded-lg border-2 transition-all text-left ${
-                          isSelected 
-                            ? 'border-real-orange bg-orange-50 text-real-orange' 
-                            : 'border-gray-200 bg-white hover:border-gray-300'
-                        }`}
-                      >
-                        <div className="font-semibold text-sm md:text-base">{months} Months</div>
-                        <div className="text-xs md:text-sm text-gray-600 mt-1">
-                          {formatPrice(monthlyPayment)}/month
-                        </div>
-                      </button>
-                    );
-                  })}
+                    // Always start with 4 months
+                    options.push(4);
+                    
+                    // Generate options in multiples of 4 up to the maximum
+                    for (let months = 8; months <= maxMonths; months += 4) {
+                      options.push(months);
+                      if (options.length >= 3) break;
+                    }
+                    
+                    // If we still don't have 3 options and maxMonths is not a multiple of 4,
+                    // add the maxMonths as the final option
+                    if (options.length < 3 && maxMonths % 4 !== 0 && !options.includes(maxMonths)) {
+                      options.push(maxMonths);
+                    }
+                    
+                    // Take first 3 options
+                    const finalOptions = options.slice(0, 3);
+                    
+                    return finalOptions.map((months) => {
+                      // Add 50,000 to property price for payment plan calculations
+                      const adjustedPrice = property.price + 50000;
+                      const monthlyPayment = (adjustedPrice / 2) / months;
+                      const isSelected = selectedPaymentPeriod === months;
+                      
+                      return (
+                        <button
+                          key={months}
+                          onClick={() => setSelectedPaymentPeriod(months)}
+                          className={`p-3 md:p-4 rounded-lg border-2 transition-all text-left ${
+                            isSelected 
+                              ? 'border-real-orange bg-orange-50 text-real-orange' 
+                              : 'border-gray-200 bg-white hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="font-semibold text-sm md:text-base">{months} Months</div>
+                          <div className="text-xs md:text-sm text-gray-600 mt-1">
+                            {formatPrice(monthlyPayment)}/month
+                          </div>
+                        </button>
+                      );
+                    });
+                  })()}
                 </div>
                 
                 <div className="mt-4 p-3 md:p-4 bg-white rounded-lg border">
@@ -322,7 +358,7 @@ const PropertyDetailPage = () => {
                     Selected Plan: <span className="font-semibold text-gray-900">{selectedPaymentPeriod} months</span>
                   </div>
                   <div className="text-lg md:text-xl font-bold text-real-orange mt-1">
-                    {formatPrice((property.price / 2) / selectedPaymentPeriod)}/month
+                    {formatPrice(((property.price + 50000) / 2) / selectedPaymentPeriod)}/month
                   </div>
                 </div>
               </div>

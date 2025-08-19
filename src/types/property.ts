@@ -24,6 +24,7 @@ export interface EnhancedProperty {
   sqft: number;
   type: PropertyType; // New field for property type
   tag: PropertyCategory; // Existing field with enum
+  maxPaymentPlanMonths?: number;
   rating: number;
   isPopular: boolean;
   isNew: boolean;
