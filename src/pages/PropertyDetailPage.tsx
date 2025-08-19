@@ -9,6 +9,7 @@ import { Property } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
+import AuthModal from '@/components/AuthModal';
 import { useProperty } from '@/hooks/useProperties';
 import { formatPrice } from '@/utils/paymentCalculations';
 import { PropertyCategory, getPropertyImages } from '@/types/property';
@@ -20,6 +21,8 @@ const PropertyDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const [selectedPaymentPeriod, setSelectedPaymentPeriod] = useState(12);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authAction, setAuthAction] = useState<'whatsapp' | 'contact' | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const { toast } = useToast();
@@ -72,22 +75,23 @@ const PropertyDetailPage = () => {
 
   const handleContactAgent = () => {
     if (user) {
-      // User is logged in, show the contact modal
+      // User is logged in, show contact modal
       setIsContactModalOpen(true);
     } else {
-      // User is not logged in, redirect to login
-      toast({
-        title: 'Login Required',
-        description: 'Please log in to contact the agent.',
-        variant: 'destructive',
-      });
-      // You could also redirect to login page here
-      // navigate('/login');
+      // User is not logged in, show auth modal
+      setAuthAction('contact');
+      setIsAuthModalOpen(true);
     }
   };
 
   const handleWhatsAppContact = () => {
     if (!property) return;
+    
+    if (!user) {
+      setAuthAction('whatsapp');
+      setIsAuthModalOpen(true);
+      return;
+    }
     
     let message = `Hi! I'm interested in this property:\n\n`;
     message += `🏠 *${property.title}*\n`;
@@ -119,6 +123,22 @@ const PropertyDetailPage = () => {
     const whatsappUrl = `https://wa.me/233551319363?text=${encodedMessage}`;
     
     window.open(whatsappUrl, '_blank');
+  };
+
+  const handleAuthSuccess = () => {
+    if (authAction === 'whatsapp') {
+      // After successful login, automatically trigger WhatsApp contact
+      handleWhatsAppContact();
+    } else if (authAction === 'contact') {
+      // After successful login, show contact modal
+      setIsContactModalOpen(true);
+    }
+    setAuthAction(null);
+  };
+
+  const handleAuthModalClose = () => {
+    setIsAuthModalOpen(false);
+    setAuthAction(null);
   };
 
   if (loading) {
@@ -406,6 +426,12 @@ const PropertyDetailPage = () => {
         onClose={() => setIsContactModalOpen(false)}
         agentId={property?.user_id || ''}
         propertyTitle={property?.title || ''}
+      />
+      
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={handleAuthModalClose}
+        onSuccess={handleAuthSuccess}
       />
     </div>
   );
