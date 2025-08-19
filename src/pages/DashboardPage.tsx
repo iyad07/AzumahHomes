@@ -10,6 +10,8 @@ import { ShoppingCart } from 'lucide-react';
 import PaymentPage from './PaymentPage';
 import { formatPrice } from "@/utils/paymentCalculations";
 import UserRoleManager from '@/components/admin/UserRoleManager';
+import PropertyManager from '@/components/admin/PropertyManager';
+import PropertyEditForm from '@/components/admin/PropertyEditForm';
 import { getPropertyMainImage } from '@/types/property';
 
 // Enhanced DashboardHome component with real data
@@ -1126,6 +1128,40 @@ const Cart = () => {
   );
 };
 
+// Property Management Component
+const PropertyManagement = () => {
+  const [editingProperty, setEditingProperty] = useState<Property | null>(null);
+
+  const handleEditProperty = (property: Property) => {
+    setEditingProperty(property);
+  };
+
+  const handleSaveProperty = (updatedProperty: Property) => {
+    setEditingProperty(null);
+    // The PropertyManager will refresh its data automatically
+  };
+
+  const handleCancelEdit = () => {
+    setEditingProperty(null);
+  };
+
+  if (editingProperty) {
+    return (
+      <PropertyEditForm
+        property={editingProperty}
+        onSave={handleSaveProperty}
+        onCancel={handleCancelEdit}
+      />
+    );
+  }
+
+  return (
+    <PropertyManager
+      onEditProperty={handleEditProperty}
+    />
+  );
+};
+
 // Update the DashboardPage component to include the Cart route
 const DashboardPage = () => {
   const { signOut, isAdmin } = useAuth(); // Add isAdmin here
@@ -1133,8 +1169,10 @@ const DashboardPage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = async () => {
-    await signOut();
+    // Navigate immediately for instant feedback
     navigate('/');
+    // Perform signout in background
+    signOut();
   };
 
   return (
@@ -1195,6 +1233,15 @@ const DashboardPage = () => {
                   Manage Users
                 </Link>
               )}
+              {isAdmin && (
+                <Link 
+                  to="/dashboard/properties" 
+                  className="block px-4 py-2 rounded-md hover:bg-gray-100 transition-colors"
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  Manage Properties
+                </Link>
+              )}
               {!isAdmin && (
                 <Link 
                   to="/dashboard/favorites" 
@@ -1237,6 +1284,7 @@ const DashboardPage = () => {
               <Route index element={<DashboardHome />} />
               {isAdmin && <Route path="listings" element={<MyListings />} />}
               {isAdmin && <Route path="users" element={<UserRoleManager />} />}
+              {isAdmin && <Route path="properties" element={<PropertyManagement />} />}
               {!isAdmin && <Route path="favorites" element={<Favorites />} />}
               {!isAdmin && <Route path="cart" element={<Cart />} />}
               <Route path="settings" element={<ProfileSettings />} />

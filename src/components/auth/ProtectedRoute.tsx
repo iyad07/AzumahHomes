@@ -12,6 +12,7 @@ const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps)
   const location = useLocation();
   const [loadingTimeout, setLoadingTimeout] = useState(false);
   const [sessionValidated, setSessionValidated] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(false);
 
   // Debug logging for role checking
   React.useEffect(() => {
@@ -31,10 +32,23 @@ const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps)
   useEffect(() => {
     const timeout = setTimeout(() => {
       setLoadingTimeout(true);
-    }, 15000); // 15 seconds timeout
+    }, 5000); // Reduced to 5 seconds timeout
 
     return () => clearTimeout(timeout);
   }, []);
+
+  // Handle profile loading for admin routes
+  useEffect(() => {
+    if (requireAdmin && user && !profile) {
+      setProfileLoading(true);
+      const timeout = setTimeout(() => {
+        setProfileLoading(false);
+      }, 3000); // Wait max 3 seconds for profile
+      return () => clearTimeout(timeout);
+    } else {
+      setProfileLoading(false);
+    }
+  }, [requireAdmin, user, profile]);
 
   // Validate session when component mounts
   useEffect(() => {
@@ -51,18 +65,20 @@ const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps)
     }
   }, [user, validateSession, sessionValidated]);
 
-  // Show loading with timeout handling
-  if (isLoading && !loadingTimeout) {
+  // Show loading only for initial auth or profile loading for admin routes
+  if ((isLoading && !loadingTimeout) || (requireAdmin && profileLoading && !profile)) {
     return (
       <div className="pt-32 pb-20 min-h-screen flex flex-col items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
-        <p className="text-gray-600">Loading...</p>
+        <p className="text-gray-600">
+          {requireAdmin && profileLoading ? 'Loading user profile...' : 'Loading...'}
+        </p>
       </div>
     );
   }
 
   // If loading timed out, show error
-  if (loadingTimeout && isLoading) {
+  if (loadingTimeout && (isLoading || (requireAdmin && profileLoading))) {
     return (
       <div className="pt-32 pb-20 min-h-screen flex flex-col items-center justify-center">
         <div className="text-center">

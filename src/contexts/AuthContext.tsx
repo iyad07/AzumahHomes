@@ -28,11 +28,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profileFetchAttempts, setProfileFetchAttempts] = useState(0);
   const [lastProfileFetch, setLastProfileFetch] = useState<string | null>(null);
 
-  const MAX_PROFILE_FETCH_ATTEMPTS = 5;
+  const MAX_PROFILE_FETCH_ATTEMPTS = 3;
   const PROFILE_CACHE_DURATION = 5 * 60 * 1000;
-  const PROFILE_FETCH_TIMEOUT = 20000;
+  const PROFILE_FETCH_TIMEOUT = 5000; // Reduced from 20s to 5s
 
-  async function retryFetch<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> {
+  async function retryFetch<T>(fn: () => Promise<T>, retries = 2, delay = 500): Promise<T> {
     for (let i = 0; i < retries; i++) {
       try {
         return await fn();
@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.warn('Auth initialization timeout');
             setIsLoading(false);
           }
-        }, PROFILE_FETCH_TIMEOUT);
+        }, 3000); // Reduced timeout for initial auth
 
         const { data: { session }, error } = await supabase.auth.getSession();
 
@@ -69,11 +69,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (mounted) {
           setSession(session);
           setUser(session?.user ?? null);
+          
+          // Set loading to false immediately when session is available
+          // This allows UI to render while profile loads in background
+          setIsLoading(false);
 
           if (session?.user) {
-            await fetchUserProfile(session.user.id, true);
-          } else {
-            setIsLoading(false);
+            // Fetch profile in background without blocking UI
+            fetchUserProfile(session.user.id, true).catch(console.error);
           }
         }
       } catch (error) {
@@ -93,15 +96,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('Auth state change:', event, !!session);
         setSession(session);
         setUser(session?.user ?? null);
+        
+        // Always set loading to false for immediate UI response
+        setIsLoading(false);
 
         if (session?.user) {
           setProfileFetchAttempts(0);
-          await fetchUserProfile(session.user.id, false);
+          // Fetch profile in background without blocking UI
+          fetchUserProfile(session.user.id, false).catch(console.error);
         } else {
           setProfile(null);
           setProfileFetchAttempts(0);
           setLastProfileFetch(null);
-          setIsLoading(false);
         }
       }
     );
@@ -120,13 +126,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (!isInitialLoad && profileFetchAttempts >= MAX_PROFILE_FETCH_ATTEMPTS) {
       console.warn('Max profile fetch attempts reached, skipping');
-      setIsLoading(false);
       return;
     }
 
     if (!isInitialLoad && profile && timeSinceLastFetch < PROFILE_CACHE_DURATION) {
       console.log('Using cached profile data:', profile);
-      setIsLoading(false);
       return;
     }
 
@@ -138,7 +142,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       const fetchPromise = retryFetch(() =>
-        supabase.from('profiles').select('*').eq('id', userId).single()
+        supabase.from('profiles').select('*').eq('id', userId).single(), 2, 300
       );
 
       const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
@@ -169,7 +173,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setProfile(null);
       }
     } finally {
-      setIsLoading(false);
+      // Don't set loading state here since we want immediate UI response
+      // Profile loading happens in background
     }
   };
 
@@ -261,21 +266,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function signOut() {
     try {
-      setIsLoading(true);
+      // Clear state immediately for instant UI feedback
       setSession(null);
       setUser(null);
       setProfile(null);
       setProfileFetchAttempts(0);
       setLastProfileFetch(null);
+      setIsLoading(false); // Set to false immediately
 
+      // Perform actual signout in background
       const { error } = await supabase.auth.signOut({ scope: 'global' });
-      if (error) console.error('Error signing out:', error);
+      if (error) {
+        console.error('Error signing out:', error);
+        // Don't show error toast for logout as user is already signed out locally
+      }
       toast.success('Signed out successfully');
     } catch (error: any) {
       console.error('Error signing out:', error);
-      toast.error(error.message || 'Failed to sign out');
-    } finally {
-      setIsLoading(false);
+      // Don't show error toast for logout failures as user state is already cleared
     }
   }
 
