@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils';
 
 const PropertyDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const [selectedPaymentPeriod, setSelectedPaymentPeriod] = useState(12);
+  const [selectedPaymentPeriod, setSelectedPaymentPeriod] = useState<number | null>(null);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authAction, setAuthAction] = useState<'whatsapp' | 'contact' | null>(null);
@@ -42,15 +42,7 @@ const PropertyDetailPage = () => {
     }
   }, [error, toast]);
 
-  // Update selectedPaymentPeriod when property loads
-  useEffect(() => {
-    if (property && property.tag === PropertyCategory.FOR_SALE) {
-      const maxMonths = property.maxPaymentPlanMonths || 12;
-      // Set to the middle option (50% of max months, minimum 6)
-      const defaultPeriod = Math.max(6, Math.round(maxMonths * 0.5));
-      setSelectedPaymentPeriod(defaultPeriod);
-    }
-  }, [property]);
+  // No auto-selection of payment plan - user must choose
 
   // Get all images for this property
   const propertyImages = property ? getPropertyImages(property) : [];
@@ -353,14 +345,24 @@ const PropertyDetailPage = () => {
                   })()}
                 </div>
                 
-                <div className="mt-4 p-3 md:p-4 bg-white rounded-lg border">
-                  <div className="text-sm md:text-base text-gray-600">
-                    Selected Plan: <span className="font-semibold text-gray-900">{selectedPaymentPeriod} months</span>
+                {selectedPaymentPeriod && (
+                  <div className="mt-4 p-3 md:p-4 bg-white rounded-lg border">
+                    <div className="text-sm md:text-base text-gray-600">
+                      Selected Plan: <span className="font-semibold text-gray-900">{selectedPaymentPeriod} months</span>
+                    </div>
+                    <div className="text-lg md:text-xl font-bold text-real-orange mt-1">
+                      {formatPrice(((property.price + 50000) / 2) / selectedPaymentPeriod)}/month
+                    </div>
                   </div>
-                  <div className="text-lg md:text-xl font-bold text-real-orange mt-1">
-                    {formatPrice(((property.price + 50000) / 2) / selectedPaymentPeriod)}/month
+                )}
+                
+                {!selectedPaymentPeriod && (
+                  <div className="mt-4 p-3 md:p-4 bg-gray-100 rounded-lg border border-dashed">
+                    <div className="text-sm md:text-base text-gray-500 text-center">
+                      Please select a payment plan above to see monthly payment details
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
 
