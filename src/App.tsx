@@ -56,7 +56,11 @@ const App = () => (
                   } />
                   <Route path="submit-listing" element={<SubmitListingPage />} />
                   <Route path="image-upload-demo" element={<ImageUploadDemoPage />} />
-                  <Route path="dashboard/*" element={<DashboardPage />} />
+                  <Route path="dashboard/*" element={
+                    <ProtectedRoute>
+                      <DashboardPage />
+                    </ProtectedRoute>
+                  } />
                   <Route path="*" element={<NotFound />} />
                 </Route>
               </Routes>

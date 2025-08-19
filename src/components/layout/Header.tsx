@@ -314,18 +314,20 @@ const Header = () => {
             >
               Contact
             </NavLink>
-            <NavLink
-              to="/dashboard"
-              className={({ isActive }) =>
-                cn(
-                  "text-xl font-medium",
-                  isActive ? "text-real-orange" : "text-gray-800"
-                )
-              }
-              onClick={toggleMobileMenu}
-            >
-              Dashboard
-            </NavLink>
+            {user && (
+              <NavLink
+                to="/dashboard"
+                className={({ isActive }) =>
+                  cn(
+                    "text-xl font-medium",
+                    isActive ? "text-real-orange" : "text-gray-800"
+                  )
+                }
+                onClick={toggleMobileMenu}
+              >
+                Dashboard
+              </NavLink>
+            )}
             {isAdmin && (
               <>
                 <NavLink
