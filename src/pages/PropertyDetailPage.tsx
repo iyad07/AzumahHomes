@@ -108,9 +108,13 @@ const PropertyDetailPage = () => {
     
     if (property.tag === PropertyCategory.FOR_SALE) {
       message += `\n💳 *Payment Plan Details:*\n`;
-      message += `• Initial Payment (50%): ${formatPrice(property.price / 2)}\n`;
-      message += `• Selected Plan: ${selectedPaymentPeriod} months\n`;
-      message += `• Monthly Payment: ${formatPrice((property.price / 2) / selectedPaymentPeriod)}\n`;
+      message += `• Initial Payment (50%): ${formatPrice((property.price + 50000) / 2)}\n`;
+      if (selectedPaymentPeriod) {
+        message += `• Selected Plan: ${selectedPaymentPeriod} months\n`;
+        message += `• Monthly Payment: ${formatPrice(((property.price + 50000) / 2) / selectedPaymentPeriod)}\n`;
+      } else {
+        message += `• Payment Plan: Not yet selected (please choose from available options)\n`;
+      }
     }
     
     const propertyUrl = window.location.href
@@ -347,11 +351,22 @@ const PropertyDetailPage = () => {
                 
                 {selectedPaymentPeriod && (
                   <div className="mt-4 p-3 md:p-4 bg-white rounded-lg border">
-                    <div className="text-sm md:text-base text-gray-600">
-                      Selected Plan: <span className="font-semibold text-gray-900">{selectedPaymentPeriod} months</span>
-                    </div>
-                    <div className="text-lg md:text-xl font-bold text-real-orange mt-1">
-                      {formatPrice(((property.price + 50000) / 2) / selectedPaymentPeriod)}/month
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="text-sm md:text-base text-gray-600">
+                          Selected Plan: <span className="font-semibold text-gray-900">{selectedPaymentPeriod} months</span>
+                        </div>
+                        <div className="text-lg md:text-xl font-bold text-real-orange mt-1">
+                          {formatPrice(((property.price + 50000) / 2) / selectedPaymentPeriod)}/month
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setSelectedPaymentPeriod(null)}
+                        className="ml-3 p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                        title="Deselect payment plan"
+                      >
+                        <X size={16} />
+                      </button>
                     </div>
                   </div>
                 )}
