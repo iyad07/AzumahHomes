@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { MapPin, Bed, Bath, Square, Star, ArrowLeft, ShoppingCart, Heart, Calendar, Maximize } from 'lucide-react';
+import { MapPin, Bed, Bath, Square, Star, ArrowLeft, ShoppingCart, Heart, Calendar, Maximize, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,14 +11,17 @@ import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProperty } from '@/hooks/useProperties';
 import { formatPrice } from '@/utils/paymentCalculations';
-import { PropertyCategory } from '@/types/property';
+import { PropertyCategory, getPropertyImages } from '@/types/property';
 import SEO from '@/components/SEO';
 import ContactAgentModal from '@/components/ContactAgentModal';
+import { cn } from '@/lib/utils';
 
 const PropertyDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const [selectedPaymentPeriod, setSelectedPaymentPeriod] = useState(12);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const { toast } = useToast();
   const { addToCart, isInCart } = useCart();
   const { user, isAdmin } = useAuth();
@@ -36,7 +39,30 @@ const PropertyDetailPage = () => {
     }
   }, [error, toast]);
 
+  // Get all images for this property
+  const propertyImages = property ? getPropertyImages(property) : [];
+  const hasMultipleImages = propertyImages.length > 1;
 
+  const handlePrevImage = () => {
+    setCurrentImageIndex((prev) => 
+      prev === 0 ? propertyImages.length - 1 : prev - 1
+    );
+  };
+
+  const handleNextImage = () => {
+    setCurrentImageIndex((prev) => 
+      prev === propertyImages.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  const openImageModal = (index: number) => {
+    setCurrentImageIndex(index);
+    setIsImageModalOpen(true);
+  };
+
+  const closeImageModal = () => {
+    setIsImageModalOpen(false);
+  };
 
   const handleAddToCart = () => {
     if (property) {
@@ -100,23 +126,78 @@ const PropertyDetailPage = () => {
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12">
-          <div className="relative">
-            <img 
-              src={property.image} 
-              alt={property.title}
-              className="w-full h-[400px] md:h-[600px] lg:h-[700px] object-cover rounded-lg shadow-lg"
-            />
-            <div className="absolute top-4 left-4 bg-real-orange text-white py-1 px-3 rounded-full text-xs md:text-sm">
-              {property.tag}
-            </div>
-            {property.isPopular && (
-              <div className="absolute top-4 right-4 bg-real-orange text-white py-1 px-3 rounded-full text-xs md:text-sm">
-                Popular
+          <div className="space-y-4">
+            {/* Main Image */}
+            <div className="relative group">
+              <img 
+                src={propertyImages[currentImageIndex]} 
+                alt={`${property.title} - Image ${currentImageIndex + 1}`}
+                className="w-full h-[400px] md:h-[600px] lg:h-[700px] object-cover rounded-lg shadow-lg cursor-pointer"
+                onClick={() => openImageModal(currentImageIndex)}
+              />
+              
+              {/* Navigation Arrows */}
+              {hasMultipleImages && (
+                <>
+                  <button
+                    onClick={handlePrevImage}
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+                  <button
+                    onClick={handleNextImage}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <ChevronRight size={20} />
+                  </button>
+                </>
+              )}
+              
+              {/* Property Tags */}
+              <div className="absolute top-4 left-4 bg-real-orange text-white py-1 px-3 rounded-full text-xs md:text-sm">
+                {property.tag}
               </div>
-            )}
-            {property.isNew && (
-              <div className="absolute top-4 right-4 bg-real-green text-white py-1 px-3 rounded-full text-xs md:text-sm">
-                New
+              {property.isPopular && (
+                <div className="absolute top-4 right-4 bg-real-orange text-white py-1 px-3 rounded-full text-xs md:text-sm">
+                  Popular
+                </div>
+              )}
+              {property.isNew && (
+                <div className="absolute top-4 right-4 bg-real-green text-white py-1 px-3 rounded-full text-xs md:text-sm">
+                  New
+                </div>
+              )}
+              
+              {/* Image Counter */}
+              {hasMultipleImages && (
+                <div className="absolute bottom-4 right-4 bg-black/50 text-white px-2 py-1 rounded text-sm">
+                  {currentImageIndex + 1} / {propertyImages.length}
+                </div>
+              )}
+            </div>
+            
+            {/* Thumbnail Gallery */}
+            {hasMultipleImages && (
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                {propertyImages.map((image, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentImageIndex(index)}
+                    className={cn(
+                      "flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all",
+                      currentImageIndex === index 
+                        ? "border-real-orange" 
+                        : "border-gray-200 hover:border-gray-300"
+                    )}
+                  >
+                    <img
+                      src={image}
+                      alt={`${property.title} - Thumbnail ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
               </div>
             )}
           </div>
@@ -236,6 +317,47 @@ const PropertyDetailPage = () => {
       </div>
       
       {/* Contact Agent Modal */}
+      {/* Full-screen Image Modal */}
+      {isImageModalOpen && (
+        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
+          <div className="relative max-w-7xl max-h-full">
+            <button
+              onClick={closeImageModal}
+              className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
+            >
+              <X size={32} />
+            </button>
+            
+            <img
+              src={propertyImages[currentImageIndex]}
+              alt={`${property?.title} - Image ${currentImageIndex + 1}`}
+              className="max-w-full max-h-[90vh] object-contain"
+            />
+            
+            {hasMultipleImages && (
+              <>
+                <button
+                  onClick={handlePrevImage}
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full"
+                >
+                  <ChevronLeft size={24} />
+                </button>
+                <button
+                  onClick={handleNextImage}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full"
+                >
+                  <ChevronRight size={24} />
+                </button>
+                
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded">
+                  {currentImageIndex + 1} / {propertyImages.length}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+      
       <ContactAgentModal
         isOpen={isContactModalOpen}
         onClose={() => setIsContactModalOpen(false)}

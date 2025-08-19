@@ -10,6 +10,7 @@ import { ShoppingCart } from 'lucide-react';
 import PaymentPage from './PaymentPage';
 import { formatPrice } from "@/utils/paymentCalculations";
 import UserRoleManager from '@/components/admin/UserRoleManager';
+import { getPropertyMainImage } from '@/types/property';
 
 // Enhanced DashboardHome component with real data
 const DashboardHome = () => {
@@ -145,7 +146,7 @@ const DashboardHome = () => {
               {properties.slice(0, 2).map((property) => (
                 <div key={property.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex">
                   <img 
-                    src={property.image} 
+                    src={getPropertyMainImage(property)} 
                     alt={property.title} 
                     className="w-24 h-24 object-cover rounded-md mr-4"
                   />
@@ -185,7 +186,7 @@ const DashboardHome = () => {
               {cartItems?.slice(0, 2).map((item) => (
                 <div key={item.property_id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex">
                   <img 
-                    src={item.property.image} 
+                    src={getPropertyMainImage(item.property)} 
                     alt={item.property.title} 
                     className="w-24 h-24 object-cover rounded-md mr-4"
                   />
@@ -357,7 +358,7 @@ const MyListings = () => {
               <div className="md:hidden space-y-3">
                 <div className="flex items-center space-x-3">
                   <img 
-                    src={property.image} 
+                    src={getPropertyMainImage(property)} 
                     alt={property.title} 
                     className="w-20 h-20 object-cover rounded-md"
                   />
@@ -406,7 +407,7 @@ const MyListings = () => {
               {/* Desktop view - grid layout */}
               <div className="col-span-5 hidden md:flex items-center space-x-3">
                 <img 
-                  src={property.image} 
+                  src={getPropertyMainImage(property)} 
                   alt={property.title} 
                   className="w-16 h-16 object-cover rounded-md"
                 />
@@ -559,7 +560,7 @@ const Favorites = () => {
             <div key={property.id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-shadow">
               <div className="relative">
                 <img 
-                  src={property.image} 
+                  src={getPropertyMainImage(property)} 
                   alt={property.title}
                   className="w-full h-48 object-cover"
                 />
@@ -948,7 +949,7 @@ const Cart = () => {
                   <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-shadow">
                     <div className="relative">
                       <img 
-                        src={item.property.image} 
+                        src={getPropertyMainImage(item.property)} 
                         alt={item.property.title}
                         className="w-full h-40 md:h-48 object-cover"
                       />
@@ -1039,7 +1040,7 @@ const Cart = () => {
                   <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-shadow">
                     <div className="relative">
                       <img 
-                        src={item.property.image} 
+                        src={getPropertyMainImage(item.property)} 
                         alt={item.property.title}
                         className="w-full h-40 md:h-48 object-cover"
                       />

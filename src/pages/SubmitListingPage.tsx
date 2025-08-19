@@ -16,6 +16,7 @@ import { supabase } from '@/lib/supabase';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import SEO from '@/components/SEO';
 import SupabaseImageUpload from '@/components/ui/supabase-image-upload';
+import MultipleImageUpload from '@/components/ui/multiple-image-upload';
 
 // Environment validation and debugging
 const checkEnvironment = () => {
@@ -65,7 +66,8 @@ const formSchema = z.object({
   baths: z.coerce.number().positive({ message: 'Number of baths must be a positive number' }),
   sqft: z.coerce.number().int().positive({ message: 'Square footage must be a positive integer' }),
   tag: z.string().min(1, { message: 'Property tag is required' }),
-  image: z.string().optional(),
+  image: z.string().optional(), // Keep for backward compatibility
+  images: z.array(z.string()).optional(), // New field for multiple images
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -115,6 +117,7 @@ const SubmitListingPage = () => {
       sqft: 0,
       tag: 'For Sale',
       image: '',
+      images: [],
     },
   });
 
@@ -151,6 +154,11 @@ const SubmitListingPage = () => {
         }
         
         if (data) {
+          // Handle both single and multiple images for backward compatibility
+          const images = data.images && data.images.length > 0 
+            ? data.images 
+            : data.image ? [data.image] : [];
+          
           // Ensure all form fields have valid values
           form.reset({
             title: data.title || '',
@@ -162,6 +170,7 @@ const SubmitListingPage = () => {
             sqft: data.sqft || 0,
             tag: data.tag || 'For Sale',
             image: data.image || '',
+            images: images,
           });
         } else {
           throw new Error('Property not found');
@@ -214,6 +223,7 @@ const SubmitListingPage = () => {
       debugLog('All validations passed, preparing data');
       
       // Sanitize and prepare data
+      const images = values.images || [];
       const propertyData = {
         title: values.title.trim(),
         description: values.description.trim(),
@@ -223,7 +233,8 @@ const SubmitListingPage = () => {
         baths: Number(values.baths) || 1,
         sqft: Number(values.sqft) || 0,
         tag: values.tag || 'For Sale',
-        image: values.image?.trim() || '',
+        image: images.length > 0 ? images[0] : (values.image?.trim() || ''), // Set first image as main image for backward compatibility
+        images: images,
         rating: 4.5, // Default rating
         isPopular: false,
         isNew: true,
@@ -467,12 +478,12 @@ const SubmitListingPage = () => {
                   
                   <FormField
                     control={form.control}
-                    name="image"
+                    name="images"
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <SupabaseImageUpload
-                            value={field.value}
+                          <MultipleImageUpload
+                            value={field.value || []}
                             onChange={field.onChange}
                             onError={(error) => {
                               toast({
@@ -481,11 +492,11 @@ const SubmitListingPage = () => {
                                 variant: 'destructive',
                               });
                             }}
-                            label="Property Image"
-                            description="Upload a high-quality image of your property. Supported formats: JPEG, PNG, WebP up to 5MB."
-                            required={false}
+                            label="Property Images"
+                            description="Upload high-quality images of your property. You can upload multiple images and reorder them. Supported formats: JPEG, PNG, WebP up to 5MB each."
                             disabled={isSubmitting}
                             maxSize={5}
+                            maxFiles={10}
                             acceptedTypes={['image/jpeg', 'image/jpg', 'image/png', 'image/webp']}
                             bucketName="property-images"
                             folderPath="properties"

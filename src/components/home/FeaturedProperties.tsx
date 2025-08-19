@@ -8,7 +8,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
 import { useProperties } from "@/hooks/useProperties";
 import { formatPrice } from "@/utils/paymentCalculations";
-import { PropertyCategory } from "@/types/property";
+import { PropertyCategory, getPropertyMainImage } from "@/types/property";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -96,7 +96,7 @@ const FeaturedProperties = () => {
               <div key={property.id} className="property-card">
                 <div className="relative overflow-hidden">
                   <img 
-                    src={property.image} 
+                    src={getPropertyMainImage(property)} 
                     alt={property.title}
                     className="property-image"
                   />

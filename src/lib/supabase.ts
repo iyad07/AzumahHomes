@@ -30,7 +30,8 @@ export interface Property {
   description: string;
   location: string;
   price: number;
-  image: string;
+  image: string; // Keep for backward compatibility
+  images?: string[]; // New field for multiple images
   beds: number;
   baths: number;
   sqft: number;
