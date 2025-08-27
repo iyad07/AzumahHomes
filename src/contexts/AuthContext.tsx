@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase, UserProfile } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { sessionMonitor, logSessionEvent } from '@/utils/sessionMonitor';
 
 interface AuthContextType {
   session: Session | null;
@@ -94,6 +95,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!mounted) return;
 
         console.log('Auth state change:', event, !!session);
+        
+        // Log session events for monitoring
+        if (event === 'SIGNED_IN' && session) {
+          logSessionEvent.sessionStart(session.access_token, session.user.id);
+        } else if (event === 'SIGNED_OUT') {
+          logSessionEvent.sessionEnd(
+            session?.access_token || 'unknown',
+            session?.user?.id || 'unknown',
+            'auth_state_change'
+          );
+        } else if (event === 'TOKEN_REFRESHED' && session) {
+          logSessionEvent.sessionRefresh(session.access_token, session.user.id, true);
+        }
+        
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -125,7 +140,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const timeSinceLastFetch = now - lastFetchTime;
 
     if (!isInitialLoad && profileFetchAttempts >= MAX_PROFILE_FETCH_ATTEMPTS) {
-      console.warn('Max profile fetch attempts reached, skipping');
+      console.warn('Max profile fetch attempts reached, using default profile');
+      // Create a safe default profile instead of skipping
+      const defaultProfile = {
+        id: userId,
+        email: user?.email || '',
+        role: 'user' as const,
+        created_at: new Date().toISOString()
+      };
+      setProfile(defaultProfile);
       return;
     }
 
@@ -142,7 +165,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       const fetchPromise = retryFetch(() =>
-        supabase.from('profiles').select('*').eq('id', userId).single(), 2, 300
+        Promise.resolve(supabase.from('profiles').select('*').eq('id', userId).single()), 3, 1000
       );
 
       const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
@@ -156,10 +179,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        if (error.message === 'Profile fetch timeout' || error.code === 'PGRST301') {
-          console.warn('Profile fetch failed, retrying may be needed');
+        // Check if this is a network/timeout error vs auth error
+        const isNetworkError = error.message === 'Profile fetch timeout' || 
+                              error.code === 'PGRST301' ||
+                              error.message?.includes('network') ||
+                              error.message?.includes('fetch');
+
+        if (isNetworkError) {
+          console.warn('Network error during profile fetch, using default profile');
+          
+          // Use existing profile if available, otherwise create default
+          if (!profile) {
+            const defaultProfile = {
+              id: userId,
+              email: user?.email || '',
+              role: 'user' as const,
+              created_at: new Date().toISOString()
+            };
+            setProfile(defaultProfile);
+          }
         } else {
-          setProfile(null);
+          // For non-network errors, still provide a default profile
+          const defaultProfile = {
+            id: userId,
+            email: user?.email || '',
+            role: 'user' as const,
+            created_at: new Date().toISOString()
+          };
+          setProfile(defaultProfile);
         }
       } else {
         console.log('Profile fetched successfully:', data);
@@ -169,9 +216,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       console.error('Error fetching user profile (outer):', error);
-      if (error instanceof Error && error.message !== 'Profile fetch timeout') {
-        setProfile(null);
-      }
+      
+      // Always provide a fallback profile instead of setting null
+      const defaultProfile = {
+        id: userId,
+        email: user?.email || '',
+        role: 'user' as const,
+        created_at: new Date().toISOString()
+      };
+      
+      console.log('Using default profile due to fetch error');
+      setProfile(defaultProfile);
     } finally {
       // Don't set loading state here since we want immediate UI response
       // Profile loading happens in background
@@ -266,54 +321,158 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function signOut() {
     try {
-      // Clear state immediately for instant UI feedback
+      setIsLoading(true);
+      console.log('Initiating sign out process');
+      
+      const { error } = await supabase.auth.signOut({ scope: 'global' });
+      if (error) {
+        console.error('Error signing out:', error);
+        // Continue with cleanup even if signOut fails
+      }
+      
+      // Clear all state immediately
       setSession(null);
       setUser(null);
       setProfile(null);
       setProfileFetchAttempts(0);
       setLastProfileFetch(null);
-      setIsLoading(false); // Set to false immediately
-
-      // Perform actual signout in background
-      const { error } = await supabase.auth.signOut({ scope: 'global' });
-      if (error) {
-        console.error('Error signing out:', error);
-        // Don't show error toast for logout as user is already signed out locally
+      
+      // Clear any stored tokens and auth data
+      try {
+        localStorage.removeItem('supabase.auth.token');
+        // Clear any other auth-related localStorage items
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith('supabase.auth')) {
+            localStorage.removeItem(key);
+          }
+        });
+      } catch (storageError) {
+        console.warn('Error clearing localStorage:', storageError);
       }
+      
+      console.log('Sign out completed successfully');
       toast.success('Signed out successfully');
+      
     } catch (error: any) {
-      console.error('Error signing out:', error);
-      // Don't show error toast for logout failures as user state is already cleared
+      console.error('Error during sign out:', error);
+      // Force clear state even if there's an error
+      setSession(null);
+      setUser(null);
+      setProfile(null);
+      setProfileFetchAttempts(0);
+      setLastProfileFetch(null);
+    } finally {
+      setIsLoading(false);
     }
   }
 
   const refreshSession = async () => {
     try {
+      console.log('Attempting to refresh session...');
+      
       const { data: { session }, error } = await supabase.auth.refreshSession();
+      
       if (error) {
         console.error('Error refreshing session:', error);
+        logSessionEvent.authError(error, 'refresh_session');
+        
+        // If refresh fails due to invalid refresh token, force logout
+        if (error.message?.includes('refresh_token') || error.message?.includes('invalid')) {
+          console.warn('Invalid refresh token, forcing logout');
+          logSessionEvent.unexpectedLogout('invalid_refresh_token', session?.access_token, session?.user?.id);
+          await signOut();
+        }
+        
+        logSessionEvent.sessionRefresh(session?.access_token || 'unknown', session?.user?.id || 'unknown', false);
         return false;
       }
+      
       if (session) {
+        console.log('Session refreshed successfully', {
+          expiresAt: session.expires_at,
+          userId: session.user?.id
+        });
+        
+        logSessionEvent.sessionRefresh(session.access_token, session.user.id, true);
+        
         setSession(session);
         setUser(session.user);
+        
+        // Refetch profile after session refresh to ensure consistency
+        if (session.user) {
+          fetchUserProfile(session.user.id, false).catch(console.error);
+        }
+        
         return true;
       }
+      
+      console.warn('Session refresh returned no session');
+      logSessionEvent.sessionRefresh('unknown', 'unknown', false);
       return false;
     } catch (error) {
-      console.error('Error refreshing session:', error);
+      console.error('Exception during session refresh:', error);
+      logSessionEvent.authError(error, 'refresh_session_exception');
+      logSessionEvent.sessionRefresh('unknown', 'unknown', false);
       return false;
     }
   };
 
   const validateSession = async () => {
-    if (!session) return false;
+    if (!session) {
+      console.log('No session found during validation');
+      logSessionEvent.sessionValidation('unknown', 'unknown', false, { reason: 'no_session' });
+      return false;
+    }
+    
     const now = Math.floor(Date.now() / 1000);
     const expiresAt = session.expires_at || 0;
-    if (expiresAt - now < 300) {
-      console.log('Session expiring soon, refreshing...');
-      return await refreshSession();
+    
+    // Check if session is already expired
+    if (expiresAt <= now) {
+      console.warn('Session has already expired, forcing logout');
+      logSessionEvent.sessionValidation(session.access_token, session.user?.id || 'unknown', false, {
+        reason: 'expired',
+        expiresAt,
+        now,
+        expiredBy: now - expiresAt
+      });
+      logSessionEvent.unexpectedLogout('session_expired', session.access_token, session.user?.id);
+      await signOut();
+      return false;
     }
+    
+    // Refresh session if expiring within 5 minutes (300 seconds)
+    if (expiresAt - now < 300) {
+      console.log('Session expiring soon, refreshing...', {
+        expiresAt,
+        now,
+        timeLeft: expiresAt - now
+      });
+      
+      const refreshSuccess = await refreshSession();
+      if (!refreshSuccess) {
+        console.warn('Session refresh failed, forcing logout');
+        logSessionEvent.sessionValidation(session.access_token, session.user?.id || 'unknown', false, {
+          reason: 'refresh_failed',
+          expiresAt,
+          now,
+          timeLeft: expiresAt - now
+        });
+        logSessionEvent.unexpectedLogout('refresh_failed', session.access_token, session.user?.id);
+        await signOut();
+        return false;
+      }
+      logSessionEvent.sessionValidation(session.access_token, session.user?.id || 'unknown', true, {
+        reason: 'refreshed',
+        timeLeft: expiresAt - now
+      });
+      return true;
+    }
+    
+    logSessionEvent.sessionValidation(session.access_token, session.user?.id || 'unknown', true, {
+      reason: 'valid',
+      timeLeft: expiresAt - now
+    });
     return true;
   };
 
@@ -329,15 +488,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [profile?.role, user?.id]);
 
   useEffect(() => {
-    if (!session || !user) return;
-    const interval = setInterval(async () => {
-      const isValid = await validateSession();
-      if (!isValid) {
-        console.warn('Session validation failed, signing out');
-        await signOut();
+    let validationInterval: NodeJS.Timeout | null = null;
+    let isValidating = false;
+
+    if (session && user) {
+      validationInterval = setInterval(async () => {
+        // Prevent concurrent validation calls
+        if (isValidating) {
+          console.log('Session validation already in progress, skipping');
+          return;
+        }
+
+        isValidating = true;
+        try {
+          const isValid = await validateSession();
+          if (!isValid) {
+            console.log('Session validation failed, user will be signed out');
+            // Don't call signOut here as validateSession already handles it
+          }
+        } catch (error) {
+          console.error('Error during session validation:', error);
+        } finally {
+          isValidating = false;
+        }
+      }, 60000); // Check every minute
+    }
+
+    return () => {
+      if (validationInterval) {
+        clearInterval(validationInterval);
       }
-    }, 60000);
-    return () => clearInterval(interval);
+    };
   }, [session, user]);
 
   const updateUserRole = async (userId: string, role: 'admin' | 'user') => {

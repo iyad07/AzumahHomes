@@ -56,12 +56,17 @@ const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps)
       validateSession().then((isValid) => {
         setSessionValidated(true);
         if (!isValid) {
-          console.warn('Session validation failed in ProtectedRoute');
+          console.warn('Session validation failed in ProtectedRoute - user will be redirected');
+          // Don't manually redirect here, let AuthContext handle it
         }
       }).catch((error) => {
-        console.error('Session validation error:', error);
+        console.error('Session validation error in ProtectedRoute:', error);
         setSessionValidated(true);
+        // Continue with normal flow even if validation fails
       });
+    } else if (!user) {
+      // Reset validation state when user logs out
+      setSessionValidated(false);
     }
   }, [user, validateSession, sessionValidated]);
 
@@ -71,25 +76,40 @@ const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps)
       <div className="pt-32 pb-20 min-h-screen flex flex-col items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
         <p className="text-gray-600">
-          {requireAdmin && profileLoading ? 'Loading user profile...' : 'Loading...'}
+          {requireAdmin && profileLoading ? 'Loading user profile...' : 'Authenticating...'}
         </p>
+        {(isLoading && !loadingTimeout) && (
+          <p className="text-sm text-gray-500 mt-2">
+            This should only take a moment
+          </p>
+        )}
       </div>
     );
   }
 
-  // If loading timed out, show error
+  // If loading timed out, show error with better recovery options
   if (loadingTimeout && (isLoading || (requireAdmin && profileLoading))) {
     return (
       <div className="pt-32 pb-20 min-h-screen flex flex-col items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Loading Timeout</h2>
-          <p className="text-gray-600 mb-4">The page is taking longer than expected to load.</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          >
-            Refresh Page
-          </button>
+        <div className="text-center max-w-md mx-auto px-4">
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Authentication Timeout</h2>
+          <p className="text-gray-600 mb-4">
+            The authentication process is taking longer than expected. This might be due to network issues.
+          </p>
+          <div className="space-y-2">
+            <button 
+              onClick={() => window.location.reload()} 
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full"
+            >
+              Refresh Page
+            </button>
+            <button 
+              onClick={() => window.location.href = '/login'} 
+              className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 w-full"
+            >
+              Go to Login
+            </button>
+          </div>
         </div>
       </div>
     );
