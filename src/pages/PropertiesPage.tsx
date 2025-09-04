@@ -276,11 +276,6 @@ const PropertiesPage = () => {
                       <Bath size={16} />
                       <span>{property.baths} Baths</span>
                     </div>
-                    
-                    <div className="flex items-center gap-1">
-                      <Maximize size={16} />
-                      <span>{property.sqft} sq ft</span>
-                    </div>
                   </div>
                   
                   {/* Add to cart button at the bottom of the card */}

@@ -126,7 +126,7 @@ const PropertyDetailPage = () => {
     message += `\nCould you please provide more information about this property?`;
     
     const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/233551319363?text=${encodedMessage}`;
+    const whatsappUrl = `https://wa.me/233542690596?text=${encodedMessage}`;
     
     window.open(whatsappUrl, '_blank');
   };
@@ -278,11 +278,11 @@ const PropertyDetailPage = () => {
 
             <div className="mb-4 md:mb-8">
               <div className="text-xl md:text-3xl font-bold text-real-blue">
-                {formatPrice(property.price)}
+                {formatPrice(selectedPaymentPeriod ? property.price + (50000 * (selectedPaymentPeriod / 3)) : property.price)}
               </div>
               {property.tag === PropertyCategory.FOR_SALE && (
                 <div className="text-green-600 text-sm md:text-base font-medium mt-1">
-                  50% accepted {formatPrice(property.price / 2)}
+                  50% accepted {formatPrice((selectedPaymentPeriod ? property.price + (50000 * (selectedPaymentPeriod / 3)) : property.price) / 2)}
                 </div>
               )}
             </div>
@@ -296,7 +296,7 @@ const PropertyDetailPage = () => {
                 </div>
                 
                 <p className="text-gray-600 text-sm md:text-base mb-4">
-                  Choose your preferred payment period for the remaining 50% ({formatPrice((property.price + 50000) / 2)})
+                  Choose your preferred payment period for the remaining 50% (price includes 50,000 GHS per payment plan)
                 </p>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
@@ -305,18 +305,15 @@ const PropertyDetailPage = () => {
                     const maxMonths = property.maxPaymentPlanMonths || 12; // Default to 12 if not set
                     const options = [];
                     
-                    // Always start with 4 months
-                    options.push(4);
-                    
-                    // Generate options in multiples of 4 up to the maximum
-                    for (let months = 8; months <= maxMonths; months += 4) {
+                    // Generate options in multiples of 3 up to the maximum
+                    for (let months = 3; months <= maxMonths; months += 3) {
                       options.push(months);
                       if (options.length >= 3) break;
                     }
                     
-                    // If we still don't have 3 options and maxMonths is not a multiple of 4,
+                    // If we still don't have 3 options and maxMonths is not a multiple of 3,
                     // add the maxMonths as the final option
-                    if (options.length < 3 && maxMonths % 4 !== 0 && !options.includes(maxMonths)) {
+                    if (options.length < 3 && maxMonths % 3 !== 0 && !options.includes(maxMonths)) {
                       options.push(maxMonths);
                     }
                     
@@ -324,8 +321,8 @@ const PropertyDetailPage = () => {
                     const finalOptions = options.slice(0, 3);
                     
                     return finalOptions.map((months) => {
-                      // Add 50,000 to property price for payment plan calculations
-                      const adjustedPrice = property.price + 50000;
+                      // Add 50,000 × (months/3) to property price for payment plan calculations
+                      const adjustedPrice = property.price + (50000 * (months / 3));
                       const monthlyPayment = (adjustedPrice / 2) / months;
                       const isSelected = selectedPaymentPeriod === months;
                       
@@ -343,6 +340,9 @@ const PropertyDetailPage = () => {
                           <div className="text-xs md:text-sm text-gray-600 mt-1">
                             {formatPrice(monthlyPayment)}/month
                           </div>
+                          <div className="text-xs text-orange-600 mt-1">
+                            +{formatPrice(50000 * (months / 3))} total
+                          </div>
                         </button>
                       );
                     });
@@ -357,7 +357,7 @@ const PropertyDetailPage = () => {
                           Selected Plan: <span className="font-semibold text-gray-900">{selectedPaymentPeriod} months</span>
                         </div>
                         <div className="text-lg md:text-xl font-bold text-real-orange mt-1">
-                          {formatPrice(((property.price + 50000) / 2) / selectedPaymentPeriod)}/month
+                          {formatPrice(((property.price + (50000 * (selectedPaymentPeriod / 3))) / 2) / selectedPaymentPeriod)}/month
                         </div>
                       </div>
                       <button
@@ -393,11 +393,6 @@ const PropertyDetailPage = () => {
                 <Bath size={20} className="mx-auto mb-1 md:mb-2" />
                 <div className="font-semibold text-sm md:text-base">{property.baths}</div>
                 <div className="text-gray-600 text-xs md:text-sm">Bathrooms</div>
-              </div>
-              <div className="text-center">
-                <Maximize size={20} className="mx-auto mb-1 md:mb-2" />
-                <div className="font-semibold text-sm md:text-base">{property.sqft}</div>
-                <div className="text-gray-600 text-xs md:text-sm">Square Feet</div>
               </div>
             </div>
 

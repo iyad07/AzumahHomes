@@ -151,11 +151,6 @@ const FeaturedProperties = () => {
                       <Bath size={16} />
                       <span>{property.baths} Baths</span>
                     </div>
-                    
-                    <div className="meta-item">
-                      <Maximize size={16} />
-                      <span>{property.sqft} sq ft</span>
-                    </div>
                   </div>
                 </div>
                 

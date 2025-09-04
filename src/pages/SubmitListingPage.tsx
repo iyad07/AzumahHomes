@@ -64,7 +64,6 @@ const formSchema = z.object({
   price: z.coerce.number().positive({ message: 'Price must be a positive number' }),
   beds: z.coerce.number().int().positive({ message: 'Number of beds must be a positive integer' }),
   baths: z.coerce.number().positive({ message: 'Number of baths must be a positive number' }),
-  sqft: z.coerce.number().int().positive({ message: 'Square footage must be a positive integer' }),
   tag: z.string().min(1, { message: 'Property tag is required' }),
   maxPaymentPlanMonths: z.coerce.number().int().min(1).max(60).optional(), // Maximum payment plan time period in months
   image: z.string().optional(), // Keep for backward compatibility
@@ -115,7 +114,6 @@ const SubmitListingPage = () => {
       price: 0,
       beds: 0,
       baths: 0,
-      sqft: 0,
       tag: 'For Sale',
       image: '',
       images: [],
@@ -168,7 +166,6 @@ const SubmitListingPage = () => {
             price: data.price || 0,
             beds: data.beds || 1,
             baths: data.baths || 1,
-            sqft: data.sqft || 0,
             tag: data.tag || 'For Sale',
             image: data.image || '',
             images: images,
@@ -232,7 +229,6 @@ const SubmitListingPage = () => {
         price: Number(values.price) || 0,
         beds: Number(values.beds) || 1,
         baths: Number(values.baths) || 1,
-        sqft: Number(values.sqft) || 0,
         tag: values.tag || 'For Sale',
         maxPaymentPlanMonths: values.maxPaymentPlanMonths || null,
         image: images.length > 0 ? images[0] : (values.image?.trim() || ''), // Set first image as main image for backward compatibility
@@ -507,19 +503,6 @@ const SubmitListingPage = () => {
                       )}
                     />
                     
-                    <FormField
-                      control={form.control}
-                      name="sqft"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Square Footage</FormLabel>
-                          <FormControl>
-                            <Input type="number" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
                   </div>
                   
                   <FormField

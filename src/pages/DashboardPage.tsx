@@ -609,10 +609,6 @@ const Favorites = () => {
                     <Bath size={16} className="mr-1" />
                     <span>{property.baths} Baths</span>
                   </div>
-                  <div className="flex items-center">
-                    <Maximize size={16} className="mr-1" />
-                    <span>{property.sqft} sqft</span>
-                  </div>
                 </div>
                 
                 <div className="mt-4 flex space-x-2">
@@ -1000,10 +996,6 @@ const Cart = () => {
                           <Bath size={14} className="mr-1" />
                           <span>{item.property.baths}</span>
                         </div>
-                        <div className="flex items-center">
-                          <Maximize size={14} className="mr-1" />
-                          <span>{item.property.sqft} sqft</span>
-                        </div>
                       </div>
                       
                       <div className="flex gap-2 mt-4">
@@ -1089,10 +1081,6 @@ const Cart = () => {
                         <div className="flex items-center mr-2 mb-2 md:mb-0">
                           <Bath size={14} className="mr-1" />
                           <span>{item.property.baths}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <Maximize size={14} className="mr-1" />
-                          <span>{item.property.sqft} sqft</span>
                         </div>
                       </div>
                       

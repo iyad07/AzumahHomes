@@ -21,7 +21,6 @@ export interface EnhancedProperty {
   images?: string[]; // New field for multiple images
   beds: number;
   baths: number;
-  sqft: number;
   type: PropertyType; // New field for property type
   tag: PropertyCategory; // Existing field with enum
   maxPaymentPlanMonths?: number;

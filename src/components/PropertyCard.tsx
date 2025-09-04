@@ -189,10 +189,7 @@ const PropertyCard = ({
               <Bath className="h-4 w-4" />
               <span>{property.baths}</span>
             </div>
-            <div className="flex items-center gap-1">
-              <Square className="h-4 w-4" />
-              <span>{property.sqft} sqft</span>
-            </div>
+
           </div>
           
           {/* Rating */}

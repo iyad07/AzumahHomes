@@ -180,9 +180,6 @@ const PropertyManager: React.FC<PropertyManagerProps> = ({
                       <div>
                         <span className="font-medium">{property.baths}</span> Bathrooms
                       </div>
-                      <div>
-                        <span className="font-medium">{property.sqft}</span> sqft
-                      </div>
                     </div>
                     
                     {/* Created Date */}
