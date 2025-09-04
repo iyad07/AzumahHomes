@@ -7,7 +7,7 @@ import { Property } from '@/lib/supabase';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
 import { formatPrice } from '@/utils/paymentCalculations';
-import { PropertyCategory } from '@/types/property';
+import { PropertyCategory, PropertyType } from '@/types/property';
 import { getPropertyImages, getPropertyMainImage } from '@/types/property';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -189,7 +189,13 @@ const PropertyCard = ({
               <Bath className="h-4 w-4" />
               <span>{property.baths}</span>
             </div>
-
+            {property.type && (
+              <div className="flex items-center gap-1">
+                <Badge variant="outline" className="text-xs">
+                  {property.type}
+                </Badge>
+              </div>
+            )}
           </div>
           
           {/* Rating */}

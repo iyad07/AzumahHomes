@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
+import { PropertyType } from '@/types/property';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import SEO from '@/components/SEO';
 import SupabaseImageUpload from '@/components/ui/supabase-image-upload';
@@ -64,6 +65,7 @@ const formSchema = z.object({
   price: z.coerce.number().positive({ message: 'Price must be a positive number' }),
   beds: z.coerce.number().int().positive({ message: 'Number of beds must be a positive integer' }),
   baths: z.coerce.number().positive({ message: 'Number of baths must be a positive number' }),
+  type: z.nativeEnum(PropertyType, { message: 'Property type is required' }),
   tag: z.string().min(1, { message: 'Property tag is required' }),
   maxPaymentPlanMonths: z.coerce.number().int().min(1).max(60).optional(), // Maximum payment plan time period in months
   image: z.string().optional(), // Keep for backward compatibility
@@ -114,6 +116,7 @@ const SubmitListingPage = () => {
       price: 0,
       beds: 0,
       baths: 0,
+      type: PropertyType.APARTMENT,
       tag: 'For Sale',
       image: '',
       images: [],
@@ -166,6 +169,7 @@ const SubmitListingPage = () => {
             price: data.price || 0,
             beds: data.beds || 1,
             baths: data.baths || 1,
+            type: data.type || PropertyType.APARTMENT,
             tag: data.tag || 'For Sale',
             image: data.image || '',
             images: images,
@@ -229,6 +233,7 @@ const SubmitListingPage = () => {
         price: Number(values.price) || 0,
         beds: Number(values.beds) || 1,
         baths: Number(values.baths) || 1,
+        type: values.type,
         tag: values.tag || 'For Sale',
         maxPaymentPlanMonths: values.maxPaymentPlanMonths || null,
         image: images.length > 0 ? images[0] : (values.image?.trim() || ''), // Set first image as main image for backward compatibility
@@ -389,7 +394,7 @@ const SubmitListingPage = () => {
                     )}
                   />
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <FormField
                       control={form.control}
                       name="price"
@@ -399,6 +404,34 @@ const SubmitListingPage = () => {
                           <FormControl>
                             <Input type="number" {...field} />
                           </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="type"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Property Type</FormLabel>
+                          <Select 
+                            onValueChange={field.onChange} 
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select property type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {Object.values(PropertyType).map((type) => (
+                                <SelectItem key={type} value={type}>
+                                  {type}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}

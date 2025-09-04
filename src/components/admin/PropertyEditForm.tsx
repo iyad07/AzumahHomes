@@ -229,7 +229,7 @@ const PropertyEditForm: React.FC<PropertyEditFormProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="space-y-2">
               <Label htmlFor="area">Area (sqft)</Label>
               <Input
@@ -240,6 +240,25 @@ const PropertyEditForm: React.FC<PropertyEditFormProps> = ({
                 placeholder="Enter area in sqft"
                 min="0"
               />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="type">Property Type</Label>
+              <Select
+                value={formData.type}
+                onValueChange={(value) => handleInputChange('type', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select property type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.values(PropertyType).map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             
             <div className="space-y-2">

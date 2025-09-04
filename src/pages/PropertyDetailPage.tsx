@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { MapPin, Bed, Bath, Square, Star, ArrowLeft, ShoppingCart, Heart, Calendar, Maximize, ChevronLeft, ChevronRight, X, MessageCircle } from 'lucide-react';
+import { MapPin, Bed, Bath, Square, Star, ArrowLeft, ShoppingCart, Heart, Calendar, Maximize, ChevronLeft, ChevronRight, X, MessageCircle, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import AuthModal from '@/components/AuthModal';
 import { useProperty } from '@/hooks/useProperties';
 import { formatPrice } from '@/utils/paymentCalculations';
-import { PropertyCategory, getPropertyImages } from '@/types/property';
+import { PropertyCategory, PropertyType, getPropertyImages } from '@/types/property';
 import SEO from '@/components/SEO';
 import ContactAgentModal from '@/components/ContactAgentModal';
 import { cn } from '@/lib/utils';
@@ -394,6 +394,13 @@ const PropertyDetailPage = () => {
                 <div className="font-semibold text-sm md:text-base">{property.baths}</div>
                 <div className="text-gray-600 text-xs md:text-sm">Bathrooms</div>
               </div>
+              {property.type && (
+                <div className="text-center">
+                  <Home size={20} className="mx-auto mb-1 md:mb-2" />
+                  <div className="font-semibold text-sm md:text-base">{property.type}</div>
+                  <div className="text-gray-600 text-xs md:text-sm">Property Type</div>
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col md:flex-row gap-4 mt-6">

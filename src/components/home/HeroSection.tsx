@@ -105,7 +105,7 @@ const HeroSection = () => {
         <h1 className="text-white text-4xl md:text-6xl font-extrabold mb-4">Journey To Your Perfect</h1>
         <h2 className="text-white text-4xl md:text-6xl font-extrabold mb-10">Luxury Home</h2>
 
-        {/* Tabs: General, Villa, Apartment */}
+        {/* Tabs: General, House, Apartment */}
         <div className="flex justify-center mb-6 ">
           <Tabs defaultValue="general" className="bg-white/50 backdrop-blur-md p-1 rounded-full shadow-lg">
             <TabsList className="grid-row grid-cols-3 gap-1 bg-transparent">
