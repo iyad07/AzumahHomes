@@ -118,10 +118,10 @@ const PropertyDetailPage = () => {
     }
     
     const propertyUrl = window.location.href
-      .replace('http://localhost:5173', 'https://azumah-homes-mu.vercel.app')
-      .replace('https://localhost:5173', 'https://azumah-homes-mu.vercel.app')
-      .replace('http://localhost:8081', 'https://azumah-homes-mu.vercel.app')
-      .replace('https://localhost:8081', 'https://azumah-homes-mu.vercel.app');
+      .replace('http://localhost:5173', 'https://www.azumahhomes.com')
+      .replace('https://localhost:5173', 'https://www.azumahhomes.com')
+      .replace('http://localhost:8081', 'https://www.azumahhomes.com')
+      .replace('https://localhost:8081', 'https://www.azumahhomes.com');
     message += `\n🔗 *Property Link:*\n${propertyUrl}\n`;
     message += `\nCould you please provide more information about this property?`;
     
@@ -301,24 +301,8 @@ const PropertyDetailPage = () => {
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
                   {(() => {
-                    // Generate payment plan options based on maxPaymentPlanMonths
-                    const maxMonths = property.maxPaymentPlanMonths || 12; // Default to 12 if not set
-                    const options = [];
-                    
-                    // Generate options in multiples of 3 up to the maximum
-                    for (let months = 3; months <= maxMonths; months += 3) {
-                      options.push(months);
-                      if (options.length >= 3) break;
-                    }
-                    
-                    // If we still don't have 3 options and maxMonths is not a multiple of 3,
-                    // add the maxMonths as the final option
-                    if (options.length < 3 && maxMonths % 3 !== 0 && !options.includes(maxMonths)) {
-                      options.push(maxMonths);
-                    }
-                    
-                    // Take first 3 options
-                    const finalOptions = options.slice(0, 3);
+                    // Fixed payment plan options: 3, 6, and 12 months
+                    const finalOptions = [3, 6, 12];
                     
                     return finalOptions.map((months) => {
                       // Add 50,000 × (months/3) to property price for payment plan calculations
@@ -339,9 +323,6 @@ const PropertyDetailPage = () => {
                           <div className="font-semibold text-sm md:text-base">{months} Months</div>
                           <div className="text-xs md:text-sm text-gray-600 mt-1">
                             {formatPrice(monthlyPayment)}/month
-                          </div>
-                          <div className="text-xs text-orange-600 mt-1">
-                            +{formatPrice(50000 * (months / 3))} total
                           </div>
                         </button>
                       );

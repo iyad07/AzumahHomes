@@ -470,7 +470,7 @@ const SubmitListingPage = () => {
                       name="maxPaymentPlanMonths"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Maximum Payment Plan Time Period (Months)</FormLabel>
+                          <FormLabel>Maximum Payment Plan Period (Months)</FormLabel>
                           <FormControl>
                             <Select 
                               onValueChange={field.onChange} 
@@ -480,26 +480,14 @@ const SubmitListingPage = () => {
                                 <SelectValue placeholder="Select maximum payment plan period" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="4">4 months</SelectItem>
-                                <SelectItem value="8">8 months</SelectItem>
+                                <SelectItem value="3">3 months</SelectItem>
+                                <SelectItem value="6">6 months</SelectItem>
                                 <SelectItem value="12">12 months</SelectItem>
-                                <SelectItem value="16">16 months</SelectItem>
-                                <SelectItem value="20">20 months</SelectItem>
-                                <SelectItem value="24">24 months</SelectItem>
-                                <SelectItem value="28">28 months</SelectItem>
-                                <SelectItem value="32">32 months</SelectItem>
-                                <SelectItem value="36">36 months</SelectItem>
-                                <SelectItem value="40">40 months</SelectItem>
-                                <SelectItem value="44">44 months</SelectItem>
-                                <SelectItem value="48">48 months</SelectItem>
-                                <SelectItem value="52">52 months</SelectItem>
-                                <SelectItem value="56">56 months</SelectItem>
-                                <SelectItem value="60">60 months</SelectItem>
                               </SelectContent>
                             </Select>
                           </FormControl>
                           <FormDescription>
-                            Set the maximum time period customers can choose for their payment plan. This will limit the payment plan options available to buyers.
+                            Choose the maximum payment plan period for your property. Buyers can select from 3, 6, or up to your selected maximum months.
                           </FormDescription>
                           <FormMessage />
                         </FormItem>

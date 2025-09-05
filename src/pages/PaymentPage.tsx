@@ -420,9 +420,9 @@ const PaymentPage = () => {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
+                                  <SelectItem value="3" className="text-sm md:text-base">3 months</SelectItem>
                                   <SelectItem value="6" className="text-sm md:text-base">6 months</SelectItem>
                                   <SelectItem value="12" className="text-sm md:text-base">12 months</SelectItem>
-                                  <SelectItem value="24" className="text-sm md:text-base">24 months</SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormMessage className="text-xs md:text-sm" />
