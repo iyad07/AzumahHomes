@@ -296,7 +296,7 @@ const PropertyDetailPage = () => {
                 </div>
                 
                 <p className="text-gray-600 text-sm md:text-base mb-4">
-                  Choose your preferred payment period for the remaining 50% (price includes 50,000 GHS per payment plan)
+                  Choose your preferred payment period for the remaining 50% (price includes accumulated interest)
                 </p>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
