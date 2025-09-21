@@ -1,4 +1,4 @@
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/react"
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -66,11 +66,12 @@ const App = () => (
               </Routes>
               <AuthDebugPanel />
             </BrowserRouter>
+            <Analytics />
           </TooltipProvider>
         </CartProvider>
       </AuthProvider>
     </QueryClientProvider>
-    <Analytics />
+   
   </HelmetProvider>
 
 );
