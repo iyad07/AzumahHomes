@@ -38,6 +38,7 @@ const PropertyEditForm: React.FC<PropertyEditFormProps> = ({
     category: property.category || PropertyCategory.APARTMENT,
     type: property.type || PropertyType.APARTMENT,
     tag: property.tag || 'For Sale',
+    maxPaymentPlanMonths: property.maxPaymentPlanMonths || 12,
     images: property.images || (property.image ? [property.image] : []),
     image: property.image || ''
   });
@@ -85,11 +86,12 @@ const PropertyEditForm: React.FC<PropertyEditFormProps> = ({
         price: formData.price,
         location: formData.location,
         beds: formData.bedrooms,
-      baths: formData.bathrooms,
-      sqft: formData.area,
+        baths: formData.bathrooms,
+        sqft: formData.area,
         category: formData.category,
         type: formData.type,
         tag: formData.tag,
+        maxPaymentPlanMonths: formData.maxPaymentPlanMonths,
         images: formData.images,
         image: formData.image, // Backward compatibility
         updated_at: new Date().toISOString()
@@ -296,6 +298,29 @@ const PropertyEditForm: React.FC<PropertyEditFormProps> = ({
               </Select>
             </div>
           </div>
+
+          {/* Payment Plan Section - Only for properties For Sale */}
+          {formData.tag === 'For Sale' && (
+            <div className="space-y-2">
+              <Label htmlFor="maxPaymentPlanMonths">Maximum Payment Plan Period (Months)</Label>
+              <Select
+                value={formData.maxPaymentPlanMonths.toString()}
+                onValueChange={(value) => handleInputChange('maxPaymentPlanMonths', Number(value))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select maximum payment plan period" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="3">3 months</SelectItem>
+                  <SelectItem value="6">6 months</SelectItem>
+                  <SelectItem value="12">12 months</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-sm text-gray-500">
+                Choose the maximum payment plan period for your property. Buyers can select from 3, 6, or up to your selected maximum months.
+              </p>
+            </div>
+          )}
 
           {/* Property Images */}
           <div className="space-y-2">
