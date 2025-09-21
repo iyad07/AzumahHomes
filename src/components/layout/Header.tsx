@@ -69,7 +69,7 @@ const Header = () => {
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-1">
               <Phone size={16} className="ml-3"/>
-              <span>0551319363</span>
+              <span>0542690596</span>
             </div>
             <div className="flex items-center gap-2">
               <Mail size={16} />
@@ -373,7 +373,7 @@ const Header = () => {
             <div className="flex flex-col space-y-4">
               <div className="flex items-center gap-2">
                 <Phone size={16} className="text-real-orange" />
-                <span>0551319363</span>
+                <span>0542690596</span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail size={16} className="text-real-orange" />

@@ -37,7 +37,7 @@ const ContactPage = () => {
     {
       icon: <Phone className="w-5 h-5" />,
       title: 'Phone Number',
-      content: '0551319363',
+      content: '0542690596',
       link: 'tel:+233551319363'
     },
     {
