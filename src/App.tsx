@@ -70,7 +70,9 @@ const App = () => (
         </CartProvider>
       </AuthProvider>
     </QueryClientProvider>
+    <Analytics />
   </HelmetProvider>
+
 );
 
 export default App;
