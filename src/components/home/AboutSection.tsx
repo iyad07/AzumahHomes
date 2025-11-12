@@ -24,8 +24,8 @@ const AboutSection = () => {
             <div className="absolute -bottom-8 -right-8 bg-white p-6 rounded-lg shadow-lg hidden md:block">
               <div className="text-center">
                 <p className="text-sm text-gray-500 uppercase tracking-wider">Since</p>
-                <p className="text-4xl font-bold text-real-blue">2025</p>
-                <p className="text-sm text-gray-500">Fresh & Innovative</p>
+                <p className="text-4xl font-bold text-real-blue">2010</p>
+                <p className="text-sm text-gray-500">Trusted by thousands</p>
               </div>
             </div>
           </div>
@@ -35,9 +35,9 @@ const AboutSection = () => {
               Real Estate Solutions Made Easy
             </h2>
             <p className="text-gray-600 text-lg mb-6">
-              At Azumah Homes, we're a fresh real estate startup launched in 2025 with a mission to
-              revolutionize property ownership in Ghana. We believe that finding your perfect property should be a
-              joyful experience, and we're building innovative solutions to make homeownership more accessible.
+              At Azumah Homes, we believe that finding your perfect property should be a
+              joyful experience. Our team of dedicated professionals is committed to
+              making your real estate journey seamless and successful.
             </p>
 
             <ul className="space-y-4 mb-8">
@@ -51,8 +51,8 @@ const AboutSection = () => {
 
             <div className="flex flex-wrap gap-6 mt-8">
               <div className="flex flex-col">
-                <span className="text-3xl font-bold text-gray-800">2025</span>
-                <span className="text-gray-500">Founded</span>
+                <span className="text-3xl font-bold text-gray-800">12+</span>
+                <span className="text-gray-500">Years Experience</span>
               </div>
               
               <div className="flex flex-col">
@@ -61,8 +61,8 @@ const AboutSection = () => {
               </div>
               
               <div className="flex flex-col">
-                <span className="text-3xl font-bold text-gray-800">50+</span>
-                <span className="text-gray-500">Properties Listed</span>
+                <span className="text-3xl font-bold text-gray-800">5000+</span>
+                <span className="text-gray-500">Happy Clients</span>
               </div>
             </div>
 

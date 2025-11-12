@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { MapPin, Bed, Bath, Square, Star, ShoppingCart, Heart, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MapPin, Bed, Bath, Square, Star, ShoppingCart, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,10 +8,8 @@ import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { formatPrice } from '@/utils/paymentCalculations';
-import { PropertyCategory, PropertyType } from '@/types/property';
-import { getPropertyImages, getPropertyMainImage } from '@/types/property';
+import { PropertyCategory } from '@/types/property';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
 
 interface PropertyCardProps {
   property: Property;
@@ -29,11 +27,6 @@ const PropertyCard = ({
   const { addToCart, isInCart } = useCart();
   const { isAdmin } = useAuth();
   const { toast } = useToast();
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  
-  // Get all images for this property
-  const propertyImages = getPropertyImages(property);
-  const hasMultipleImages = propertyImages.length > 1;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -56,77 +49,18 @@ const PropertyCard = ({
     });
   };
 
-  const handlePrevImage = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setCurrentImageIndex((prev) => 
-      prev === 0 ? propertyImages.length - 1 : prev - 1
-    );
-  };
-
-  const handleNextImage = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setCurrentImageIndex((prev) => 
-      prev === propertyImages.length - 1 ? 0 : prev + 1
-    );
-  };
-
   return (
     <Card className={cn('group hover:shadow-lg transition-all duration-300', className)}>
       <Link to={`/property/${property.id}`} className="block">
         <div className="relative overflow-hidden rounded-t-lg">
           <img
-            src={propertyImages[currentImageIndex]}
-            alt={`${property.title} - Image ${currentImageIndex + 1}`}
+            src={property.image}
+            alt={property.title}
             className={cn(
               'w-full object-cover transition-transform duration-300 group-hover:scale-105 shadow-lg',
               imageHeight
             )}
           />
-          
-          {/* Image navigation arrows - only show if multiple images */}
-          {hasMultipleImages && (
-            <>
-              <button
-                onClick={handlePrevImage}
-                className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"
-                aria-label="Previous image"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-              <button
-                onClick={handleNextImage}
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"
-                aria-label="Next image"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            </>
-          )}
-          
-          {/* Image indicators - only show if multiple images */}
-          {hasMultipleImages && (
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
-              {propertyImages.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setCurrentImageIndex(index);
-                  }}
-                  className={cn(
-                    'w-2 h-2 rounded-full transition-all duration-300',
-                    index === currentImageIndex 
-                      ? 'bg-white' 
-                      : 'bg-white/50 hover:bg-white/75'
-                  )}
-                  aria-label={`Go to image ${index + 1}`}
-                />
-              ))}
-            </div>
-          )}
           
           {/* Property badges */}
           <div className="absolute top-4 left-4 flex flex-col gap-2">
@@ -191,13 +125,10 @@ const PropertyCard = ({
               <Bath className="h-4 w-4" />
               <span>{property.baths}</span>
             </div>
-            {property.type && (
-              <div className="flex items-center gap-1">
-                <Badge variant="outline" className="text-xs">
-                  {property.type}
-                </Badge>
-              </div>
-            )}
+            <div className="flex items-center gap-1">
+              <Square className="h-4 w-4" />
+              <span>{property.sqft} sqft</span>
+            </div>
           </div>
           
           {/* Rating */}

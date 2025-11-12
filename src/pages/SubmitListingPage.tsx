@@ -13,11 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
-import { PropertyType } from '@/types/property';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import SEO from '@/components/SEO';
-import SupabaseImageUpload from '@/components/ui/supabase-image-upload';
-import MultipleImageUpload from '@/components/ui/multiple-image-upload';
 
 // Environment validation and debugging
 const checkEnvironment = () => {
@@ -65,11 +62,9 @@ const formSchema = z.object({
   price: z.coerce.number().positive({ message: 'Price must be a positive number' }),
   beds: z.coerce.number().int().positive({ message: 'Number of beds must be a positive integer' }),
   baths: z.coerce.number().positive({ message: 'Number of baths must be a positive number' }),
-  type: z.nativeEnum(PropertyType, { message: 'Property type is required' }),
+  sqft: z.coerce.number().int().positive({ message: 'Square footage must be a positive integer' }),
   tag: z.string().min(1, { message: 'Property tag is required' }),
-  maxPaymentPlanMonths: z.coerce.number().int().min(1).max(60).optional(), // Maximum payment plan time period in months
-  image: z.string().optional(), // Keep for backward compatibility
-  images: z.array(z.string()).optional(), // New field for multiple images
+  image: z.string().url({ message: 'Please enter a valid image URL' }),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -116,10 +111,9 @@ const SubmitListingPage = () => {
       price: 0,
       beds: 0,
       baths: 0,
-      type: PropertyType.APARTMENT,
+      sqft: 0,
       tag: 'For Sale',
       image: '',
-      images: [],
     },
   });
 
@@ -156,11 +150,6 @@ const SubmitListingPage = () => {
         }
         
         if (data) {
-          // Handle both single and multiple images for backward compatibility
-          const images = data.images && data.images.length > 0 
-            ? data.images 
-            : data.image ? [data.image] : [];
-          
           // Ensure all form fields have valid values
           form.reset({
             title: data.title || '',
@@ -169,10 +158,9 @@ const SubmitListingPage = () => {
             price: data.price || 0,
             beds: data.beds || 1,
             baths: data.baths || 1,
-            type: data.type || PropertyType.APARTMENT,
+            sqft: data.sqft || 0,
             tag: data.tag || 'For Sale',
             image: data.image || '',
-            images: images,
           });
         } else {
           throw new Error('Property not found');
@@ -225,7 +213,6 @@ const SubmitListingPage = () => {
       debugLog('All validations passed, preparing data');
       
       // Sanitize and prepare data
-      const images = values.images || [];
       const propertyData = {
         title: values.title.trim(),
         description: values.description.trim(),
@@ -233,11 +220,9 @@ const SubmitListingPage = () => {
         price: Number(values.price) || 0,
         beds: Number(values.beds) || 1,
         baths: Number(values.baths) || 1,
-        type: values.type,
+        sqft: Number(values.sqft) || 0,
         tag: values.tag || 'For Sale',
-        maxPaymentPlanMonths: values.maxPaymentPlanMonths || null,
-        image: images.length > 0 ? images[0] : (values.image?.trim() || ''), // Set first image as main image for backward compatibility
-        images: images,
+        image: values.image?.trim() || '',
         rating: 4.5, // Default rating
         isPopular: false,
         isNew: true,
@@ -394,7 +379,7 @@ const SubmitListingPage = () => {
                     )}
                   />
                   
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                       control={form.control}
                       name="price"
@@ -404,34 +389,6 @@ const SubmitListingPage = () => {
                           <FormControl>
                             <Input type="number" {...field} />
                           </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="type"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Property Type</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select property type" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {Object.values(PropertyType).map((type) => (
-                                <SelectItem key={type} value={type}>
-                                  {type}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -463,39 +420,7 @@ const SubmitListingPage = () => {
                     />
                   </div>
                   
-                  {/* Maximum Payment Plan Time Period - Only for For Sale properties */}
-                  {form.watch('tag') === 'For Sale' && (
-                    <FormField
-                      control={form.control}
-                      name="maxPaymentPlanMonths"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Maximum Payment Plan Period (Months)</FormLabel>
-                          <FormControl>
-                            <Select 
-                              onValueChange={field.onChange} 
-                              defaultValue={field.value?.toString()}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select maximum payment plan period" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="3">3 months</SelectItem>
-                                <SelectItem value="6">6 months</SelectItem>
-                                <SelectItem value="12">12 months</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </FormControl>
-                          <FormDescription>
-                            Choose the maximum payment plan period for your property. Buyers can select from 3, 6, or up to your selected maximum months.
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-                   
-                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <FormField
                       control={form.control}
                       name="beds"
@@ -524,34 +449,33 @@ const SubmitListingPage = () => {
                       )}
                     />
                     
+                    <FormField
+                      control={form.control}
+                      name="sqft"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Square Footage</FormLabel>
+                          <FormControl>
+                            <Input type="number" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                   
                   <FormField
                     control={form.control}
-                    name="images"
+                    name="image"
                     render={({ field }) => (
                       <FormItem>
+                        <FormLabel>Image URL</FormLabel>
                         <FormControl>
-                          <MultipleImageUpload
-                            value={field.value || []}
-                            onChange={field.onChange}
-                            onError={(error) => {
-                              toast({
-                                title: 'Upload Error',
-                                description: error,
-                                variant: 'destructive',
-                              });
-                            }}
-                            label="Property Images"
-                            description="Upload high-quality images of your property. You can upload multiple images and reorder them. Supported formats: JPEG, PNG, WebP up to 5MB each."
-                            disabled={isSubmitting}
-                            maxSize={5}
-                            maxFiles={10}
-                            acceptedTypes={['image/jpeg', 'image/jpg', 'image/png', 'image/webp']}
-                            bucketName="property-images"
-                            folderPath="properties"
-                          />
+                          <Input placeholder="https://example.com/image.jpg" {...field} />
                         </FormControl>
+                        <FormDescription>
+                          Enter a URL for the property image. For a real application, you would implement file uploads.
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}

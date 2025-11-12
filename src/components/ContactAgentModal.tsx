@@ -59,7 +59,7 @@ const ContactAgentModal = ({ isOpen, onClose, agentId, propertyTitle }: ContactA
       
       if (isMobile) {
         // Initiate call to the specified number
-        window.location.href = 'tel:0542690596';
+        window.location.href = 'tel:0551319363';
       }
       
       // Reset form and close modal

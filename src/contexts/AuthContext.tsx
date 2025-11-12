@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
-import { supabase, UserProfile } from '@/lib/supabase';
+import { supabase, UserProfile, UserRole } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { sessionMonitor, logSessionEvent } from '@/utils/sessionMonitor';
 
 interface AuthContextType {
   session: Session | null;
@@ -16,6 +15,7 @@ interface AuthContextType {
   refreshSession: () => Promise<boolean>;
   validateSession: () => Promise<boolean>;
   updateUserRole: (userId: string, role: 'admin' | 'user') => Promise<boolean>;
+  updateProfile: (updates: Partial<Pick<UserProfile, 'full_name' | 'phone' | 'address' | 'bio'>>) => Promise<boolean>;
   refetchProfile: () => Promise<void>;
 }
 
@@ -27,24 +27,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [profileFetchAttempts, setProfileFetchAttempts] = useState(0);
-  const [lastProfileFetch, setLastProfileFetch] = useState<string | null>(null);
 
+  // Maximum retry attempts
   const MAX_PROFILE_FETCH_ATTEMPTS = 3;
-  const PROFILE_CACHE_DURATION = 5 * 60 * 1000;
-  const PROFILE_FETCH_TIMEOUT = 5000; // Reduced from 20s to 5s
-
-  async function retryFetch<T>(fn: () => Promise<T>, retries = 2, delay = 500): Promise<T> {
-    for (let i = 0; i < retries; i++) {
-      try {
-        return await fn();
-      } catch (err) {
-        console.warn(`Retry ${i + 1} failed:`, err);
-        if (i === retries - 1) throw err;
-        await new Promise(res => setTimeout(res, delay * (i + 1)));
-      }
-    }
-    throw new Error("All retries failed");
-  }
 
   useEffect(() => {
     let mounted = true;
@@ -52,18 +37,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const initializeAuth = async () => {
       try {
+        // Set a timeout for the entire initialization
         timeoutId = setTimeout(() => {
           if (mounted) {
             console.warn('Auth initialization timeout');
             setIsLoading(false);
           }
-        }, 3000); // Reduced timeout for initial auth
+        }, 10000); // 10 seconds timeout
 
+        // Get initial session
         const { data: { session }, error } = await supabase.auth.getSession();
-
+        
         if (error) {
           console.error('Error getting session:', error);
-          if (mounted) setIsLoading(false);
+          if (mounted) {
+            setIsLoading(false);
+          }
           return;
         }
 
@@ -71,168 +60,188 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setSession(session);
           setUser(session?.user ?? null);
           
-          // Set loading to false immediately when session is available
-          // This allows UI to render while profile loads in background
-          setIsLoading(false);
-
           if (session?.user) {
-            // Fetch profile in background without blocking UI
-            fetchUserProfile(session.user.id, true).catch(console.error);
+            await fetchUserProfile(session.user.id, true);
+          } else {
+            setIsLoading(false);
           }
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
-        if (mounted) setIsLoading(false);
+        if (mounted) {
+          setIsLoading(false);
+        }
       } finally {
-        if (timeoutId) clearTimeout(timeoutId);
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
       }
     };
 
     initializeAuth();
 
+    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return;
-
+        
         console.log('Auth state change:', event, !!session);
         
-        // Log session events for monitoring
-        if (event === 'SIGNED_IN' && session) {
-          logSessionEvent.sessionStart(session.access_token, session.user.id);
-        } else if (event === 'SIGNED_OUT') {
-          logSessionEvent.sessionEnd(
-            session?.access_token || 'unknown',
-            session?.user?.id || 'unknown',
-            'auth_state_change'
-          );
-        } else if (event === 'TOKEN_REFRESHED' && session) {
-          logSessionEvent.sessionRefresh(session.access_token, session.user.id, true);
-        }
-        
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        // Always set loading to false for immediate UI response
-        setIsLoading(false);
-
-        if (session?.user) {
-          setProfileFetchAttempts(0);
-          // Fetch profile in background without blocking UI
-          fetchUserProfile(session.user.id, false).catch(console.error);
-        } else {
+        // Handle logout events explicitly
+        if (event === 'SIGNED_OUT' || !session) {
+          console.log('User signed out, clearing state');
+          setSession(null);
+          setUser(null);
           setProfile(null);
           setProfileFetchAttempts(0);
-          setLastProfileFetch(null);
+          setIsLoading(false);
+          return;
+        }
+        
+        // Handle login events
+        if (event === 'SIGNED_IN' && session?.user) {
+          console.log('User signed in, setting up session');
+          setSession(session);
+          setUser(session.user);
+          
+          // Reset attempts on new session
+          setProfileFetchAttempts(0);
+          
+          // Ensure user profile exists before fetching
+          await ensureUserProfile(session.user);
+          await fetchUserProfile(session.user.id, false);
+        } else if (session?.user) {
+          // Handle other auth events (token refresh, etc.)
+          setSession(session);
+          setUser(session.user);
+          
+          if (!profile) {
+            // Only fetch profile if we don't have one
+            await fetchUserProfile(session.user.id, false);
+          }
         }
       }
     );
 
     return () => {
       mounted = false;
-      if (timeoutId) clearTimeout(timeoutId);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
       subscription.unsubscribe();
     };
   }, []);
 
-  const fetchUserProfile = async (userId: string, isInitialLoad: boolean = false) => {
-    const now = Date.now();
-    const lastFetchTime = lastProfileFetch ? new Date(lastProfileFetch).getTime() : 0;
-    const timeSinceLastFetch = now - lastFetchTime;
-
+  // Function to fetch user profile with retry logic
+  const fetchUserProfile = async (userId: string, isInitialLoad: boolean = false, retryCount = 0): Promise<UserProfile | null> => {
+    const maxRetries = 3;
+    const retryDelay = Math.pow(2, retryCount) * 1000; // Exponential backoff
+    
+    console.log('Fetching user profile:', {
+      userId,
+      isInitialLoad,
+      profileFetchAttempts,
+      hasProfile: !!profile,
+      retryCount
+    });
+    
+    // Skip if we've exceeded max attempts and it's not an initial load or forced refresh
     if (!isInitialLoad && profileFetchAttempts >= MAX_PROFILE_FETCH_ATTEMPTS) {
-      console.warn('Max profile fetch attempts reached, using default profile');
-      // Create a safe default profile instead of skipping
-      const defaultProfile = {
-        id: userId,
-        email: user?.email || '',
-        role: 'user' as const,
-        created_at: new Date().toISOString()
-      };
-      setProfile(defaultProfile);
-      return;
-    }
-
-    if (!isInitialLoad && profile && timeSinceLastFetch < PROFILE_CACHE_DURATION) {
-      console.log('Using cached profile data:', profile);
-      return;
+      console.warn('Max profile fetch attempts reached, skipping');
+      setIsLoading(false);
+      return null;
     }
 
     try {
-      setProfileFetchAttempts(prev => prev + 1);
-
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Profile fetch timeout')), PROFILE_FETCH_TIMEOUT);
-      });
-
-      const fetchPromise = retryFetch(() =>
-        Promise.resolve(supabase.from('profiles').select('*').eq('id', userId).single()), 3, 1000
-      );
-
-      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
+      if (retryCount === 0) {
+        setProfileFetchAttempts(prev => prev + 1);
+      }
+      
+      console.log(`Fetching profile for user ${userId} (attempt ${retryCount + 1})`);
+      
+      // Fetch profile directly
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
 
       if (error) {
-        console.error('Error fetching user profile:', error);
-
         if (error.code === 'PGRST116') {
+          // Profile not found
           console.log('Profile not found, creating default profile');
           await createDefaultProfile(userId);
-          return;
+          return null;
         }
-
-        // Check if this is a network/timeout error vs auth error
-        const isNetworkError = error.message === 'Profile fetch timeout' || 
-                              error.code === 'PGRST301' ||
-                              error.message?.includes('network') ||
-                              error.message?.includes('fetch');
-
-        if (isNetworkError) {
-          console.warn('Network error during profile fetch, using default profile');
-          
-          // Use existing profile if available, otherwise create default
-          if (!profile) {
-            const defaultProfile = {
-              id: userId,
-              email: user?.email || '',
-              role: 'user' as const,
-              created_at: new Date().toISOString()
-            };
-            setProfile(defaultProfile);
-          }
+        
+        console.error('Error fetching user profile:', error);
+        
+        // Retry on network or temporary errors
+        if (retryCount < maxRetries && (
+          error.message?.includes('network') ||
+          error.message?.includes('timeout') ||
+          error.code === 'PGRST301' // Connection error
+        )) {
+          console.log(`Retrying profile fetch in ${retryDelay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, retryDelay));
+          return fetchUserProfile(userId, isInitialLoad, retryCount + 1);
+        }
+        
+        // Only clear profile on initial load or if we don't have one
+        if (isInitialLoad || !profile) {
+          console.warn('Profile fetch failed, clearing profile state');
+          setProfile(null);
         } else {
-          // For non-network errors, still provide a default profile
-          const defaultProfile = {
-            id: userId,
-            email: user?.email || '',
-            role: 'user' as const,
-            created_at: new Date().toISOString()
-          };
-          setProfile(defaultProfile);
+          console.warn('Profile fetch failed, keeping existing profile to prevent role switching');
         }
-      } else {
-        console.log('Profile fetched successfully:', data);
-        setProfile(data);
-        setLastProfileFetch(new Date().toISOString());
-        setProfileFetchAttempts(0);
+        return null;
       }
-    } catch (error) {
-      console.error('Error fetching user profile (outer):', error);
+
+      if (!data) {
+        console.log('No profile data returned');
+        return null;
+      }
       
-      // Always provide a fallback profile instead of setting null
-      const defaultProfile = {
-        id: userId,
-        email: user?.email || '',
-        role: 'user' as const,
-        created_at: new Date().toISOString()
+      // Ensure all required fields are present with proper null handling
+      const normalizedProfile: UserProfile = {
+        id: data.id,
+        email: data.email,
+        role: data.role,
+        full_name: data.full_name || null,
+        phone: data.phone || null,
+        address: data.address || null,
+        bio: data.bio || null,
+        created_at: data.created_at,
+        updated_at: data.updated_at || null
       };
       
-      console.log('Using default profile due to fetch error');
-      setProfile(defaultProfile);
+      console.log('Profile fetched successfully:', normalizedProfile);
+      setProfile(normalizedProfile);
+      setProfileFetchAttempts(0); // Reset on success
+      return normalizedProfile;
+    } catch (error) {
+      console.error('Exception fetching profile:', error);
+      
+      // Retry on exceptions
+      if (retryCount < maxRetries) {
+        console.log(`Retrying profile fetch in ${retryDelay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+        return fetchUserProfile(userId, isInitialLoad, retryCount + 1);
+      }
+      
+      // Only clear profile on initial load to prevent role switching on refresh
+      if (isInitialLoad || !profile) {
+        setProfile(null);
+      }
+      return null;
     } finally {
-      // Don't set loading state here since we want immediate UI response
-      // Profile loading happens in background
+      if (retryCount === 0) {
+        setIsLoading(false);
+      }
     }
   };
 
+  // Helper function to create default profile if it doesn't exist
   const createDefaultProfile = async (userId: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -243,16 +252,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .upsert([{ 
           id: userId, 
           email: user.email || '', 
-          role: 'user',
-          full_name: user.user_metadata?.full_name || '',
-          phone: user.user_metadata?.phone || '',
-          created_at: new Date().toISOString()
+          role: 'user' as UserRole,
+          full_name: user.user_metadata?.full_name || null,
+          phone: user.user_metadata?.phone || null,
+          address: null,
+          bio: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         }], { onConflict: 'id' });
-
+      
       if (profileError) {
         console.error('Error creating default profile:', profileError);
       } else {
         console.log('Default profile created successfully');
+        // Fetch the newly created profile
         await fetchUserProfile(userId, true);
       }
     } catch (error) {
@@ -262,17 +275,133 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function signIn(email: string, password: string) {
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      console.log('Starting login process for:', email);
+      
+      // Add timeout protection for login
+      const loginPromise = supabase.auth.signInWithPassword({ email, password });
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Login timeout - please try again')), 15000)
+      );
+      
+      const { error, data } = await Promise.race([loginPromise, timeoutPromise]) as any;
+      
       if (error) throw error;
+      
+      // Don't wait for profile check - let it happen in background
+      if (data.user) {
+        console.log('Login successful, checking profile in background for:', data.user.email);
+        // Run profile check asynchronously without blocking login
+        ensureUserProfile(data.user).catch(error => {
+          console.error('Background profile check failed:', error);
+        });
+      }
+      
       toast.success('Signed in successfully');
     } catch (error: any) {
+      console.error('Login error:', error);
       toast.error(error.message || 'Failed to sign in');
       throw error;
     }
   }
 
+  // Helper function to ensure user profile exists (optimized for speed)
+  async function ensureUserProfile(user: any) {
+    try {
+      console.log('Checking profile for user:', user.email);
+      
+      // Determine role based on email
+      const adminEmails = [
+        'iodeenoxide@gmail.com',
+        'oideenz4@gmail.com', 
+        'azumahhomes@gmail.com',
+      ];
+      
+      const isAdminUser = adminEmails.includes(user.email?.toLowerCase() || '');
+      const expectedRole = isAdminUser ? 'admin' : 'user';
+      
+      // First, check if profile exists
+      const { data: existingProfile, error: fetchError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('Error checking existing profile:', fetchError);
+        return null;
+      }
+      
+      if (existingProfile) {
+        // Profile exists, only update if role or email needs correction
+        const needsUpdate = 
+          existingProfile.role !== expectedRole || 
+          existingProfile.email !== user.email;
+        
+        if (needsUpdate) {
+          console.log('Updating existing profile role/email');
+          const { data: updatedProfile, error: updateError } = await supabase
+            .from('profiles')
+            .update({
+              role: expectedRole as UserRole,
+              email: user.email,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', user.id)
+            .select()
+            .single();
+          
+          if (updateError) {
+            console.error('Error updating profile:', updateError);
+            return existingProfile; // Return existing profile if update fails
+          }
+          
+          console.log('Profile updated:', updatedProfile);
+          return updatedProfile;
+        } else {
+          console.log('Profile exists and is up to date');
+          return existingProfile;
+        }
+      } else {
+        // Profile doesn't exist, create new one
+        console.log('Creating new profile');
+        const profileData = {
+          id: user.id,
+          email: user.email,
+          role: expectedRole as UserRole,
+          full_name: user.user_metadata?.full_name || null,
+          phone: user.user_metadata?.phone || null,
+          address: null,
+          bio: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        
+        const { data: newProfile, error: insertError } = await supabase
+          .from('profiles')
+          .insert(profileData)
+          .select()
+          .single();
+        
+        if (insertError) {
+          console.error('Error creating profile:', insertError);
+          return null;
+        }
+        
+        console.log('Profile created:', newProfile);
+        return newProfile;
+      }
+    } catch (error) {
+      console.error('Exception in ensureUserProfile:', error);
+      return null;
+    }
+  }
+
   async function signUp(email: string, password: string, fullName?: string, phone?: string) {
     try {
+      console.log('Starting signup process for:', email);
+      setIsLoading(true);
+      
+      // First, sign up the user with Supabase Auth
       const { error, data } = await supabase.auth.signUp({ 
         email, 
         password,
@@ -283,244 +412,137 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
       });
-
-      if (error) throw error;
-
-      if (data.user) {
-        try {
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .upsert([{ 
-              id: data.user.id, 
-              email, 
-              role: 'user',
-              full_name: fullName || '',
-              phone: phone || '',
-              created_at: new Date().toISOString()
-            }], { onConflict: 'id' });
-
-          if (profileError) {
-            console.error('Error creating profile:', profileError);
-            toast.error('Account created but profile setup failed. Please contact support.');
-            return;
-          }
-        } catch (profileErr) {
-          console.error('Exception creating profile:', profileErr);
-          toast.error('Account created but profile setup failed. Please contact support.');
-          return;
-        }
+      
+      if (error) {
+        console.error('Auth signup error:', error);
+        setIsLoading(false);
+        throw error;
       }
-
-      toast.success('Account created successfully. Please check your email for verification.');
+      
+      console.log('Auth signup successful, user ID:', data.user?.id);
+      
+      // Profile will be created automatically when user first logs in
+      if (data.user) {
+        console.log('User created successfully, profile will be created on first login');
+        toast.success('Account created successfully! Please check your email for verification.');
+        setIsLoading(false);
+        return;
+      }
+      
+      toast.success('Account created successfully! Please check your email for verification.');
+      setIsLoading(false);
     } catch (error: any) {
       console.error('Signup error:', error);
-      toast.error(error.message || 'Failed to create account');
+      setIsLoading(false);
+      
+      // Provide more specific error messages
+      let errorMessage = 'Failed to create account';
+      if (error.message?.includes('already registered')) {
+        errorMessage = 'An account with this email already exists. Please try logging in instead.';
+      } else if (error.message?.includes('Password')) {
+        errorMessage = 'Password must be at least 6 characters long.';
+      } else if (error.message?.includes('email')) {
+        errorMessage = 'Please enter a valid email address.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
       throw error;
     }
   }
 
   async function signOut() {
     try {
-      setIsLoading(true);
-      console.log('Initiating sign out process');
+      console.log('Starting logout process');
       
+      // Clear local state immediately to prevent UI flickering
+      setSession(null);
+      setUser(null);
+      setProfile(null);
+      setProfileFetchAttempts(0);
+      setIsLoading(false); // Explicitly reset loading state
+      
+      // Sign out from Supabase with global scope to ensure complete logout
       const { error } = await supabase.auth.signOut({ scope: 'global' });
       if (error) {
         console.error('Error signing out:', error);
-        // Continue with cleanup even if signOut fails
+        // Don't throw here, as local state is already cleared
       }
       
-      // Clear all state immediately
-      setSession(null);
-      setUser(null);
-      setProfile(null);
-      setProfileFetchAttempts(0);
-      setLastProfileFetch(null);
-      
-      // Clear any stored tokens and auth data
-      try {
-        localStorage.removeItem('supabase.auth.token');
-        // Clear any other auth-related localStorage items
-        Object.keys(localStorage).forEach(key => {
-          if (key.startsWith('supabase.auth')) {
-            localStorage.removeItem(key);
-          }
-        });
-      } catch (storageError) {
-        console.warn('Error clearing localStorage:', storageError);
-      }
-      
-      console.log('Sign out completed successfully');
+      console.log('Logout completed successfully');
       toast.success('Signed out successfully');
-      
     } catch (error: any) {
-      console.error('Error during sign out:', error);
-      // Force clear state even if there's an error
-      setSession(null);
-      setUser(null);
-      setProfile(null);
-      setProfileFetchAttempts(0);
-      setLastProfileFetch(null);
-    } finally {
+      console.error('Error signing out:', error);
+      // Ensure loading state is reset even on error
       setIsLoading(false);
+      toast.error(error.message || 'Failed to sign out');
     }
   }
-
+  
+  // Add session refresh function
   const refreshSession = async () => {
     try {
-      console.log('Attempting to refresh session...');
-      
       const { data: { session }, error } = await supabase.auth.refreshSession();
-      
       if (error) {
         console.error('Error refreshing session:', error);
-        logSessionEvent.authError(error, 'refresh_session');
-        
-        // If refresh fails due to invalid refresh token, force logout
-        if (error.message?.includes('refresh_token') || error.message?.includes('invalid')) {
-          console.warn('Invalid refresh token, forcing logout');
-          logSessionEvent.unexpectedLogout('invalid_refresh_token', session?.access_token, session?.user?.id);
-          await signOut();
-        }
-        
-        logSessionEvent.sessionRefresh(session?.access_token || 'unknown', session?.user?.id || 'unknown', false);
         return false;
       }
       
       if (session) {
-        console.log('Session refreshed successfully', {
-          expiresAt: session.expires_at,
-          userId: session.user?.id
-        });
-        
-        logSessionEvent.sessionRefresh(session.access_token, session.user.id, true);
-        
         setSession(session);
         setUser(session.user);
-        
-        // Refetch profile after session refresh to ensure consistency
-        if (session.user) {
-          fetchUserProfile(session.user.id, false).catch(console.error);
-        }
-        
         return true;
       }
       
-      console.warn('Session refresh returned no session');
-      logSessionEvent.sessionRefresh('unknown', 'unknown', false);
       return false;
     } catch (error) {
-      console.error('Exception during session refresh:', error);
-      logSessionEvent.authError(error, 'refresh_session_exception');
-      logSessionEvent.sessionRefresh('unknown', 'unknown', false);
+      console.error('Error refreshing session:', error);
       return false;
     }
   };
-
+  
+  // Add session validation
   const validateSession = async () => {
-    if (!session) {
-      console.log('No session found during validation');
-      logSessionEvent.sessionValidation('unknown', 'unknown', false, { reason: 'no_session' });
-      return false;
-    }
+    if (!session) return false;
     
     const now = Math.floor(Date.now() / 1000);
     const expiresAt = session.expires_at || 0;
     
-    // Check if session is already expired
-    if (expiresAt <= now) {
-      console.warn('Session has already expired, forcing logout');
-      logSessionEvent.sessionValidation(session.access_token, session.user?.id || 'unknown', false, {
-        reason: 'expired',
-        expiresAt,
-        now,
-        expiredBy: now - expiresAt
-      });
-      logSessionEvent.unexpectedLogout('session_expired', session.access_token, session.user?.id);
-      await signOut();
-      return false;
-    }
-    
-    // Refresh session if expiring within 5 minutes (300 seconds)
+    // If session expires in less than 5 minutes, refresh it
     if (expiresAt - now < 300) {
-      console.log('Session expiring soon, refreshing...', {
-        expiresAt,
-        now,
-        timeLeft: expiresAt - now
-      });
-      
-      const refreshSuccess = await refreshSession();
-      if (!refreshSuccess) {
-        console.warn('Session refresh failed, forcing logout');
-        logSessionEvent.sessionValidation(session.access_token, session.user?.id || 'unknown', false, {
-          reason: 'refresh_failed',
-          expiresAt,
-          now,
-          timeLeft: expiresAt - now
-        });
-        logSessionEvent.unexpectedLogout('refresh_failed', session.access_token, session.user?.id);
-        await signOut();
-        return false;
-      }
-      logSessionEvent.sessionValidation(session.access_token, session.user?.id || 'unknown', true, {
-        reason: 'refreshed',
-        timeLeft: expiresAt - now
-      });
-      return true;
+      console.log('Session expiring soon, refreshing...');
+      return await refreshSession();
     }
     
-    logSessionEvent.sessionValidation(session.access_token, session.user?.id || 'unknown', true, {
-      reason: 'valid',
-      timeLeft: expiresAt - now
-    });
     return true;
   };
 
+  // Enhanced admin check
   const isAdmin = React.useMemo(() => {
-    const adminStatus = profile?.role === 'admin';
-    console.log('Admin status check:', {
-      profile: profile,
-      role: profile?.role,
-      isAdmin: adminStatus,
-      userId: user?.id
-    });
-    return adminStatus;
-  }, [profile?.role, user?.id]);
-
-  useEffect(() => {
-    let validationInterval: NodeJS.Timeout | null = null;
-    let isValidating = false;
-
-    if (session && user) {
-      validationInterval = setInterval(async () => {
-        // Prevent concurrent validation calls
-        if (isValidating) {
-          console.log('Session validation already in progress, skipping');
-          return;
-        }
-
-        isValidating = true;
-        try {
-          const isValid = await validateSession();
-          if (!isValid) {
-            console.log('Session validation failed, user will be signed out');
-            // Don't call signOut here as validateSession already handles it
-          }
-        } catch (error) {
-          console.error('Error during session validation:', error);
-        } finally {
-          isValidating = false;
-        }
-      }, 60000); // Check every minute
+    // Don't determine admin status if still loading or no profile
+    if (isLoading || !profile) {
+      return false;
     }
+    return profile?.role === 'admin';
+  }, [profile?.role, user?.id, isLoading]);
 
-    return () => {
-      if (validationInterval) {
-        clearInterval(validationInterval);
+  // Add periodic session validation
+  useEffect(() => {
+    if (!session || !user) return;
+    
+    const interval = setInterval(async () => {
+      const isValid = await validateSession();
+      if (!isValid) {
+        console.warn('Session validation failed, signing out');
+        await signOut();
       }
-    };
+    }, 60000); // Check every minute
+    
+    return () => clearInterval(interval);
   }, [session, user]);
 
+  // Function to update user role (admin only)
   const updateUserRole = async (userId: string, role: 'admin' | 'user') => {
     try {
       if (!isAdmin) {
@@ -528,6 +550,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         toast.error('Unauthorized: Only admins can update user roles');
         return false;
       }
+
       const { error } = await supabase
         .from('profiles')
         .update({ role, updated_at: new Date().toISOString() })
@@ -538,6 +561,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         toast.error('Failed to update user role');
         return false;
       }
+
       console.log(`User role updated successfully: ${userId} -> ${role}`);
       toast.success(`User role updated to ${role}`);
       return true;
@@ -548,11 +572,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Function to update user profile
+  const updateProfile = async (updates: Partial<Pick<UserProfile, 'full_name' | 'phone' | 'address' | 'bio'>>) => {
+    try {
+      if (!user || !profile) {
+        console.error('No user or profile found');
+        toast.error('Please log in to update your profile');
+        return false;
+      }
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({ 
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (error) {
+        console.error('Error updating profile:', error);
+        toast.error('Failed to update profile');
+        return false;
+      }
+
+      // Update local profile state
+      setProfile(prev => prev ? { ...prev, ...updates, updated_at: new Date().toISOString() } : null);
+      
+      console.log('Profile updated successfully');
+      toast.success('Profile updated successfully');
+      return true;
+    } catch (error) {
+      console.error('Exception updating profile:', error);
+      toast.error('Failed to update profile');
+      return false;
+    }
+  };
+
+  // Function to manually refetch profile
   const refetchProfile = async () => {
-    if (user) {
+    if (!user) {
+      console.warn('No user found, cannot refetch profile');
+      return null;
+    }
+    
+    console.log('Manually refetching profile for user:', user.id);
+    setIsLoading(true);
+    
+    try {
       setProfileFetchAttempts(0);
-      setLastProfileFetch(null);
-      await fetchUserProfile(user.id, true);
+      const profile = await fetchUserProfile(user.id, true);
+      return profile;
+    } catch (error) {
+      console.error('Error refetching profile:', error);
+      return null;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -568,10 +642,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshSession,
     validateSession,
     updateUserRole,
+    updateProfile,
     refetchProfile,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  // Cast refetchProfile return type to void before providing context
+  const contextValue: AuthContextType = {
+    ...value,
+    refetchProfile: async () => {
+      await value.refetchProfile();
+    }
+  };
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

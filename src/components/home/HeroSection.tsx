@@ -1,6 +1,6 @@
 
-import { useState, useEffect } from "react";
-import { Search, MapPin, Home, Building2, Check, ChevronsUpDown } from "lucide-react";
+import { useState } from "react";
+import { Search, MapPin, Home, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -12,57 +12,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
 import { useNavigate } from "react-router-dom";
 import { PropertyType, PropertyCategory } from "@/types/property";
 import { usePropertyStats } from "@/hooks/useProperties";
-import { supabase } from "@/lib/supabase";
-import { cn } from "@/lib/utils";
 
 const HeroSection = () => {
   const [priceRange, setPriceRange] = useState([50000, 800000]);
+  const [locations, setLocations] = useState<string[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [searchParams, setSearchParams] = useState({
     query: "",
     category: "",
     location: ""
   });
-  const [locations, setLocations] = useState<string[]>([]);
-  const [open, setOpen] = useState(false);
   usePropertyStats();
   const navigate = useNavigate();
-
-  // Fetch locations from database
-  useEffect(() => {
-    const fetchLocations = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('properties')
-          .select('location')
-          .not('location', 'is', null);
-
-        if (error) throw error;
-
-        const uniqueLocations = [...new Set(data?.map(item => item.location) || [])];
-        setLocations(uniqueLocations.filter(Boolean));
-      } catch (error) {
-        console.error('Error fetching locations:', error);
-      }
-    };
-
-    fetchLocations();
-  }, []);
   
   const formatPrice = (value: number) => {
     return `$${value.toLocaleString()}`;
@@ -105,7 +69,7 @@ const HeroSection = () => {
         <h1 className="text-white text-4xl md:text-6xl font-extrabold mb-4">Journey To Your Perfect</h1>
         <h2 className="text-white text-4xl md:text-6xl font-extrabold mb-10">Luxury Home</h2>
 
-        {/* Tabs: General, House, Apartment */}
+        {/* Tabs: General, Villa, Apartment */}
         <div className="flex justify-center mb-6 ">
           <Tabs defaultValue="general" className="bg-white/50 backdrop-blur-md p-1 rounded-full shadow-lg">
             <TabsList className="grid-row grid-cols-3 gap-1 bg-transparent">
@@ -130,55 +94,35 @@ const HeroSection = () => {
                 <SelectValue placeholder="Select Category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={PropertyCategory.FOR_SALE}>For Sale</SelectItem>
-                <SelectItem value={PropertyCategory.FOR_RENT}>For Rent</SelectItem>
+                {categories.length > 0 ? (
+                  categories.map((category) => (
+                    <SelectItem key={category} value={category}>{category}</SelectItem>
+                  ))
+                ) : (
+                  <>
+                    <SelectItem value={PropertyType.APARTMENT}>Apartment</SelectItem>
+                    <SelectItem value={PropertyType.HOUSE}>House</SelectItem>
+                  </>
+                )}
               </SelectContent>
             </Select>
-            <Popover open={open} onOpenChange={setOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={open}
-                  className="col-span-1 justify-between bg-transparent text-white border-white/20 hover:bg-white/10"
-                >
-                  {searchParams.location || "Enter Location"}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[200px] p-0">
-                <Command>
-                  <CommandInput 
-                    placeholder="Search location..." 
-                    value={searchParams.location}
-                    onValueChange={(value) => handleInputChange("location", value)}
-                  />
-                  <CommandList>
-                    <CommandEmpty>No location found.</CommandEmpty>
-                    <CommandGroup>
-                      {locations.map((location) => (
-                        <CommandItem
-                          key={location}
-                          value={location}
-                          onSelect={(currentValue) => {
-                            handleInputChange("location", currentValue === searchParams.location ? "" : currentValue);
-                            setOpen(false);
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              searchParams.location === location ? "opacity-100" : "opacity-0"
-                            )}
-                          />
-                          {location}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+            <Select onValueChange={(value) => handleInputChange("location", value)}>
+              <SelectTrigger className="bg-transparent text-white">
+                <SelectValue placeholder="Location" />
+              </SelectTrigger>
+              <SelectContent>
+                {locations.length > 0 ? (
+                  locations.map((location) => (
+                    <SelectItem key={location} value={location}>{location}</SelectItem>
+                  ))
+                ) : (
+                  <>
+                    <SelectItem value="East Legon">East Legon</SelectItem>
+                    <SelectItem value="Madina">Madina</SelectItem>
+                  </>
+                )}
+              </SelectContent>
+            </Select>
             <Button type="submit" className="bg-orange-500 hover:bg-orange-600 text-white">
               <Search className="mr-2 h-4 w-4" /> Search
             </Button>

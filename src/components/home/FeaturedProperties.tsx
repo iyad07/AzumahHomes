@@ -8,7 +8,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
 import { useProperties } from "@/hooks/useProperties";
 import { formatPrice } from "@/utils/paymentCalculations";
-import { PropertyCategory, getPropertyMainImage } from "@/types/property";
+import { PropertyCategory } from "@/types/property";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -96,7 +96,7 @@ const FeaturedProperties = () => {
               <div key={property.id} className="property-card">
                 <div className="relative overflow-hidden">
                   <img 
-                    src={getPropertyMainImage(property)} 
+                    src={property.image} 
                     alt={property.title}
                     className="property-image"
                   />
@@ -150,6 +150,11 @@ const FeaturedProperties = () => {
                     <div className="meta-item">
                       <Bath size={16} />
                       <span>{property.baths} Baths</span>
+                    </div>
+                    
+                    <div className="meta-item">
+                      <Maximize size={16} />
+                      <span>{property.sqft} sq ft</span>
                     </div>
                   </div>
                 </div>

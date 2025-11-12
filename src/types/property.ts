@@ -17,38 +17,18 @@ export interface EnhancedProperty {
   description: string;
   location: string;
   price: number;
-  image: string; // Keep for backward compatibility
-  images?: string[]; // New field for multiple images
+  image: string;
   beds: number;
   baths: number;
+  sqft: number;
   type: PropertyType; // New field for property type
   tag: PropertyCategory; // Existing field with enum
-  maxPaymentPlanMonths?: number;
   rating: number;
   isPopular: boolean;
   isNew: boolean;
   created_at: string;
   user_id: string;
 }
-
-// Utility functions for image handling
-export const getPropertyImages = (property: EnhancedProperty): string[] => {
-  // If images array exists and has content, use it
-  if (property.images && property.images.length > 0) {
-    return property.images;
-  }
-  // Fall back to single image field for backward compatibility
-  if (property.image) {
-    return [property.image];
-  }
-  // Return empty array if no images
-  return [];
-};
-
-export const getPropertyMainImage = (property: EnhancedProperty): string => {
-  const images = getPropertyImages(property);
-  return images.length > 0 ? images[0] : '';
-};
 
 // Type guards for runtime type checking
 export const isPropertyType = (value: string): value is PropertyType => {

@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Checkbox } from '@/components/ui/checkbox';
 import { MapPin, Home, Loader2 } from 'lucide-react';
 import { calculateMixedPayment, formatPrice } from '@/utils/paymentCalculations';
-import { PropertyCategory, getPropertyMainImage } from '@/types/property';
+import { PropertyCategory } from '@/types/property';
 
 // Define the form schema with Zod
 const paymentFormSchema = z.object({
@@ -134,7 +134,7 @@ const PaymentPage = () => {
                   <div key={item.id} className="flex gap-3 md:gap-4 pb-4 border-b border-gray-100">
                     <div className="flex-shrink-0">
                       <img 
-                        src={getPropertyMainImage(item.property)} 
+                        src={item.property.image} 
                         alt={item.property.title}
                         className="w-16 h-16 md:w-20 md:h-20 object-cover rounded-md"
                       />
@@ -161,7 +161,7 @@ const PaymentPage = () => {
                   <div key={item.id} className="flex gap-3 md:gap-4 pb-4 border-b border-gray-100">
                     <div className="flex-shrink-0">
                       <img 
-                        src={getPropertyMainImage(item.property)} 
+                        src={item.property.image} 
                         alt={item.property.title}
                         className="w-16 h-16 md:w-20 md:h-20 object-cover rounded-md"
                       />
@@ -420,9 +420,9 @@ const PaymentPage = () => {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="3" className="text-sm md:text-base">3 months</SelectItem>
                                   <SelectItem value="6" className="text-sm md:text-base">6 months</SelectItem>
                                   <SelectItem value="12" className="text-sm md:text-base">12 months</SelectItem>
+                                  <SelectItem value="24" className="text-sm md:text-base">24 months</SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormMessage className="text-xs md:text-sm" />

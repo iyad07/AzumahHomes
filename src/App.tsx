@@ -21,7 +21,6 @@ import DashboardPage from "./pages/DashboardPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import NotFound from "./pages/NotFound";
-import ImageUploadDemoPage from "./pages/ImageUploadDemoPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -53,7 +52,6 @@ const App = () => (
                     </ProtectedRoute>
                   } />
                   <Route path="submit-listing" element={<SubmitListingPage />} />
-                  <Route path="image-upload-demo" element={<ImageUploadDemoPage />} />
                   <Route path="dashboard/*" element={
                     <ProtectedRoute>
                       <DashboardPage />
@@ -67,9 +65,7 @@ const App = () => (
         </CartProvider>
       </AuthProvider>
     </QueryClientProvider>
-   
   </HelmetProvider>
-
 );
 
 export default App;

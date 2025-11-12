@@ -7,10 +7,10 @@ const BlogPage = () => {
   const [posts] = useState([
     {
       id: 1,
-      title: '10 Tips for First-Time Home Buyers in 2025',
+      title: '10 Tips for First-Time Home Buyers in 2024',
       excerpt: 'Navigating the real estate market can be challenging for first-time buyers. Here are essential tips to help you make informed decisions...',
       image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1073&q=80',
-      date: '2025-01-15',
+      date: '2024-01-15',
       readTime: '5 min read',
       category: 'Buying Guide',
       author: {
@@ -23,7 +23,7 @@ const BlogPage = () => {
       title: 'The Impact of AI on Real Estate Market Analysis',
       excerpt: 'Artificial Intelligence is revolutionizing how we analyze real estate markets. Discover how AI tools are helping investors make better decisions...',
       image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1172&q=80',
-      date: '2025-01-10',
+      date: '2024-01-10',
       readTime: '7 min read',
       category: 'Market Trends',
       author: {
@@ -36,7 +36,7 @@ const BlogPage = () => {
       title: 'Sustainable Home Features That Increase Property Value',
       excerpt: "Green living isn't just good for the environment—it's good for your property value too. Learn about the most impactful sustainable home features...",
       image: 'https://images.unsplash.com/photo-1630619747797-4a175c6b205f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80',
-      date: '2025-01-05',
+      date: '2024-01-05',
       readTime: '6 min read',
       category: 'Home Improvement',
       author: {

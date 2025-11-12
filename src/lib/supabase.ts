@@ -30,14 +30,12 @@ export interface Property {
   description: string;
   location: string;
   price: number;
-  image: string; // Keep for backward compatibility
-  images?: string[]; // New field for multiple images
+  image: string;
   beds: number;
   baths: number;
   sqft: number;
   type: string;
   tag: string;
-  maxPaymentPlanMonths?: number;
   rating: number;
   isPopular: boolean;
   isNew: boolean;
