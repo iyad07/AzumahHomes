@@ -10,6 +10,9 @@ import { ShoppingCart } from 'lucide-react';
 import PaymentPage from './PaymentPage';
 import { formatPrice } from "@/utils/paymentCalculations";
 import UserRoleManager from '@/components/admin/UserRoleManager';
+import PropertyManager from '@/components/admin/PropertyManager';
+import PropertyEditForm from '@/components/admin/PropertyEditForm';
+import { getPropertyMainImage } from '@/types/property';
 
 // Enhanced DashboardHome component with real data
 const DashboardHome = () => {
@@ -145,7 +148,7 @@ const DashboardHome = () => {
               {properties.slice(0, 2).map((property) => (
                 <div key={property.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex">
                   <img 
-                    src={property.image} 
+                    src={getPropertyMainImage(property)} 
                     alt={property.title} 
                     className="w-24 h-24 object-cover rounded-md mr-4"
                   />
@@ -185,7 +188,7 @@ const DashboardHome = () => {
               {cartItems?.slice(0, 2).map((item) => (
                 <div key={item.property_id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex">
                   <img 
-                    src={item.property.image} 
+                    src={getPropertyMainImage(item.property)} 
                     alt={item.property.title} 
                     className="w-24 h-24 object-cover rounded-md mr-4"
                   />
@@ -357,7 +360,7 @@ const MyListings = () => {
               <div className="md:hidden space-y-3">
                 <div className="flex items-center space-x-3">
                   <img 
-                    src={property.image} 
+                    src={getPropertyMainImage(property)} 
                     alt={property.title} 
                     className="w-20 h-20 object-cover rounded-md"
                   />
@@ -406,7 +409,7 @@ const MyListings = () => {
               {/* Desktop view - grid layout */}
               <div className="col-span-5 hidden md:flex items-center space-x-3">
                 <img 
-                  src={property.image} 
+                  src={getPropertyMainImage(property)} 
                   alt={property.title} 
                   className="w-16 h-16 object-cover rounded-md"
                 />
@@ -559,7 +562,7 @@ const Favorites = () => {
             <div key={property.id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-shadow">
               <div className="relative">
                 <img 
-                  src={property.image} 
+                  src={getPropertyMainImage(property)} 
                   alt={property.title}
                   className="w-full h-48 object-cover"
                 />
@@ -605,10 +608,6 @@ const Favorites = () => {
                   <div className="flex items-center">
                     <Bath size={16} className="mr-1" />
                     <span>{property.baths} Baths</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Maximize size={16} className="mr-1" />
-                    <span>{property.sqft} sqft</span>
                   </div>
                 </div>
                 
@@ -948,7 +947,7 @@ const Cart = () => {
                   <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-shadow">
                     <div className="relative">
                       <img 
-                        src={item.property.image} 
+                        src={getPropertyMainImage(item.property)} 
                         alt={item.property.title}
                         className="w-full h-40 md:h-48 object-cover"
                       />
@@ -997,10 +996,6 @@ const Cart = () => {
                           <Bath size={14} className="mr-1" />
                           <span>{item.property.baths}</span>
                         </div>
-                        <div className="flex items-center">
-                          <Maximize size={14} className="mr-1" />
-                          <span>{item.property.sqft} sqft</span>
-                        </div>
                       </div>
                       
                       <div className="flex gap-2 mt-4">
@@ -1039,7 +1034,7 @@ const Cart = () => {
                   <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-shadow">
                     <div className="relative">
                       <img 
-                        src={item.property.image} 
+                        src={getPropertyMainImage(item.property)} 
                         alt={item.property.title}
                         className="w-full h-40 md:h-48 object-cover"
                       />
@@ -1087,10 +1082,6 @@ const Cart = () => {
                           <Bath size={14} className="mr-1" />
                           <span>{item.property.baths}</span>
                         </div>
-                        <div className="flex items-center">
-                          <Maximize size={14} className="mr-1" />
-                          <span>{item.property.sqft} sqft</span>
-                        </div>
                       </div>
                       
                       <div className="flex gap-2 mt-4">
@@ -1125,6 +1116,40 @@ const Cart = () => {
   );
 };
 
+// Property Management Component
+const PropertyManagement = () => {
+  const [editingProperty, setEditingProperty] = useState<Property | null>(null);
+
+  const handleEditProperty = (property: Property) => {
+    setEditingProperty(property);
+  };
+
+  const handleSaveProperty = (updatedProperty: Property) => {
+    setEditingProperty(null);
+    // The PropertyManager will refresh its data automatically
+  };
+
+  const handleCancelEdit = () => {
+    setEditingProperty(null);
+  };
+
+  if (editingProperty) {
+    return (
+      <PropertyEditForm
+        property={editingProperty}
+        onSave={handleSaveProperty}
+        onCancel={handleCancelEdit}
+      />
+    );
+  }
+
+  return (
+    <PropertyManager
+      onEditProperty={handleEditProperty}
+    />
+  );
+};
+
 // Update the DashboardPage component to include the Cart route
 const DashboardPage = () => {
   const { signOut, isAdmin } = useAuth(); // Add isAdmin here
@@ -1132,16 +1157,10 @@ const DashboardPage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = async () => {
-    try {
-      console.log('Dashboard logout initiated...');
-      await signOut();
-      console.log('Dashboard logout successful, navigating to home...');
-      navigate('/');
-    } catch (error) {
-      console.error('Dashboard logout error:', error);
-      // Still navigate to home even if logout fails to prevent user from being stuck
-      navigate('/');
-    }
+    // Navigate immediately for instant feedback
+    navigate('/');
+    // Perform signout in background
+    signOut();
   };
 
   return (
@@ -1202,6 +1221,15 @@ const DashboardPage = () => {
                   Manage Users
                 </Link>
               )}
+              {isAdmin && (
+                <Link 
+                  to="/dashboard/properties" 
+                  className="block px-4 py-2 rounded-md hover:bg-gray-100 transition-colors"
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  Manage Properties
+                </Link>
+              )}
               {!isAdmin && (
                 <Link 
                   to="/dashboard/favorites" 
@@ -1244,6 +1272,7 @@ const DashboardPage = () => {
               <Route index element={<DashboardHome />} />
               {isAdmin && <Route path="listings" element={<MyListings />} />}
               {isAdmin && <Route path="users" element={<UserRoleManager />} />}
+              {isAdmin && <Route path="properties" element={<PropertyManagement />} />}
               {!isAdmin && <Route path="favorites" element={<Favorites />} />}
               {!isAdmin && <Route path="cart" element={<Cart />} />}
               <Route path="settings" element={<ProfileSettings />} />

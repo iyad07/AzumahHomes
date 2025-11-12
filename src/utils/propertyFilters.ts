@@ -8,7 +8,7 @@ export const filterByType = (properties: Property[], type: string): Property[] =
     p.title?.toLowerCase().includes(type.toLowerCase()) ||
     // Fallback to checking title for property type until database schema is updated
     (type.toLowerCase() === 'apartment' && p.title?.toLowerCase().includes('apartment')) ||
-    (type.toLowerCase() === 'house' && (p.title?.toLowerCase().includes('house') || p.title?.toLowerCase().includes('villa')))
+    (type.toLowerCase() === 'house' && p.title?.toLowerCase().includes('house'))
   );
 };
 
@@ -36,7 +36,7 @@ export const countPropertiesByType = (properties: Property[]): Record<string, nu
     const title = property.title?.toLowerCase() || '';
     if (title.includes('apartment')) {
       counts.apartment++;
-    } else if (title.includes('house') || title.includes('villa')) {
+    } else if (title.includes('house')) {
       counts.house++;
     }
   });

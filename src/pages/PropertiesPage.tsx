@@ -12,7 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useProperties } from "@/hooks/useProperties";
 import { formatPrice } from "@/utils/paymentCalculations";
-import { PropertyCategory } from "@/types/property";
+import { PropertyCategory, getPropertyMainImage } from "@/types/property";
 import SEO from "@/components/SEO";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@radix-ui/react-dropdown-menu";
 
@@ -200,7 +200,7 @@ const PropertiesPage = () => {
               <div key={property.id} className="property-card relative bg-white rounded-lg shadow-md overflow-hidden group hover:shadow-xl transition-shadow duration-300">
                 <div className="relative overflow-hidden">
                   <img 
-                    src={property.image} 
+                    src={getPropertyMainImage(property)} 
                     alt={property.title}
                     className="w-full h-80 object-cover group-hover:scale-110 transition-transform duration-300 shadow-lg"
                   />
@@ -275,11 +275,6 @@ const PropertiesPage = () => {
                     <div className="flex items-center gap-1">
                       <Bath size={16} />
                       <span>{property.baths} Baths</span>
-                    </div>
-                    
-                    <div className="flex items-center gap-1">
-                      <Maximize size={16} />
-                      <span>{property.sqft} sq ft</span>
                     </div>
                   </div>
                   

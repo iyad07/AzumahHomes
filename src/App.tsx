@@ -1,4 +1,4 @@
-
+import { Analytics } from "@vercel/analytics/react"
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -22,8 +22,9 @@ import DashboardPage from "./pages/DashboardPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import NotFound from "./pages/NotFound";
+import ImageUploadDemoPage from "./pages/ImageUploadDemoPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
-
+import AuthDebugPanel from "./components/debug/AuthDebugPanel";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,7 @@ const App = () => (
                     </ProtectedRoute>
                   } />
                   <Route path="submit-listing" element={<SubmitListingPage />} />
+                  <Route path="image-upload-demo" element={<ImageUploadDemoPage />} />
                   <Route path="dashboard/*" element={
                     <ProtectedRoute>
                       <DashboardPage />
@@ -62,13 +64,16 @@ const App = () => (
                   <Route path="*" element={<NotFound />} />
                 </Route>
               </Routes>
-      
+              <AuthDebugPanel />
             </BrowserRouter>
+            <Analytics />
           </TooltipProvider>
         </CartProvider>
       </AuthProvider>
     </QueryClientProvider>
+   
   </HelmetProvider>
+
 );
 
 export default App;

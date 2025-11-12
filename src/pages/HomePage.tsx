@@ -37,7 +37,7 @@ const HomePage = () => {
       <HeroSection />
       <CategorySection />
       <FeaturedProperties />
-      <StatsSection />
+      {/* <StatsSection /> */}
       <LocationsSection />
       <AboutSection/>
       <BlogSection />

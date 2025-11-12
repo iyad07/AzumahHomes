@@ -14,8 +14,8 @@ const SEO = ({
   title = "Azumah Homes - Flexible Rent-to-Own Real Estate Solutions | Buy, Sell & Rent Properties",
   description = "Azumah Homes is a real estate startup dedicated to making homeownership more flexible, transparent, and accessible for all Ghanaians through our innovative rent-to-own model.",
   keywords = "rent to own Ghana, flexible real estate, transparent property solutions, Greater Accra properties, Azumah Homes, real estate startup Ghana",
-  image = "https://azumah-homes-mu.vercel.app/logo.png",
-  url = "https://azumah-homes-mu.vercel.app",
+  image = "https://www.azumahhomes.com/logo.png",
+  url = "https://www.azumahhomes.com",
   type = "website",
   structuredData
 }: SEOProps) => {
