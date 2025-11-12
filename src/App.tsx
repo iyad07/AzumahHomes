@@ -1,4 +1,3 @@
-import { Analytics } from "@vercel/analytics/react"
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -24,7 +23,6 @@ import SignupPage from "./pages/SignupPage";
 import NotFound from "./pages/NotFound";
 import ImageUploadDemoPage from "./pages/ImageUploadDemoPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
-import AuthDebugPanel from "./components/debug/AuthDebugPanel";
 
 const queryClient = new QueryClient();
 
@@ -64,9 +62,7 @@ const App = () => (
                   <Route path="*" element={<NotFound />} />
                 </Route>
               </Routes>
-              <AuthDebugPanel />
             </BrowserRouter>
-            <Analytics />
           </TooltipProvider>
         </CartProvider>
       </AuthProvider>
