@@ -119,7 +119,7 @@ const Header = () => {
                 "text-xl lg:text-3xl -ml-1 font-extrabold tracking-tight hover:text-blue-700 transition-colors duration-300",
                 // Always dark on mobile for visibility, conditional on desktop
                 "text-black lg:text-black lg:group-hover:text-blue-700",
-                !shouldUseDarkText && "lg:text-white"
+                !shouldUseDarkText && "lg:text-orange-500"
               )}
             >
               Azumah Homes
