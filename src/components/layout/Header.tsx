@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Link, NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";0
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,10 +24,6 @@ const Header = () => {
   const isHomePage = pathname === '/';
   // On mobile, always use dark text for visibility. On desktop, use conditional logic
   const shouldUseDarkText = !isHomePage || isScrolled;
-  
-  // Pages with white backgrounds that need dark text
-  const whiteBackgroundPages = ['/properties', '/about', '/blog', '/contact', '/dashboard', '/agents'];
-  const isWhiteBackgroundPage = whiteBackgroundPages.includes(pathname) || pathname.startsWith('/properties/');
 
   // Handle scroll effect for header
   useEffect(() => {
@@ -54,31 +50,29 @@ const Header = () => {
   };
 
   return (
-    <header
-      className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-        // Glassy backdrop blur effect
-        isWhiteBackgroundPage 
-          ? "bg-white/80 backdrop-blur-lg shadow-lg border-b border-white/20" 
-          : "lg:bg-white/10 lg:backdrop-blur-xl bg-white/90 backdrop-blur-lg",
-        isScrolled ? "bg-white/70 backdrop-blur-2xl shadow-xl py-2" : "py-3"
-      )}
+      <header
+    className={cn(
+      "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+      // Mobile: completely solid background for visibility
+      "lg:bg-white/20 lg:backdrop-blur-md bg-white",
+      isScrolled ? "bg-white shadow-md py-2" : "py-2"
+    )}
   >
       <div className="px-0.5">
         {/* Top header with contact info */}
         <div
           className={cn(
-            "hidden lg:flex justify-between items-center text-sm mb-2 transition-opacity duration-300 border-b-[0.5px] border-white/30 pb-1 text-white",
-            isScrolled ? "opacity-0 pointer-events-none h-0 overflow-hidden" : ""
+            "hidden lg:flex justify-between items-center text-sm mb-2 transition-opacity duration-300 border-b-[0.5px] border-black/30 pb-1",
+            isScrolled ? "opacity-0 pointer-events-none h-0 overflow-hidden" : shouldUseDarkText ? "text-black" : "text-white"
           )}
         >
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1">
-              <Phone size={14} className="ml-3"/>
-              <span>0551319363</span>
+              <Phone size={16} className="ml-3"/>
+              <span>0542690596</span>
             </div>
-            <div className="flex items-center gap-1">
-              <Mail size={14} />
+            <div className="flex items-center gap-2">
+              <Mail size={16} />
               <span>azumahhomes@gmail.com</span>
             </div>
           </div>
@@ -101,21 +95,13 @@ const Header = () => {
               </>
             )}
             {user && (
-              <>
-                <Link
-                  to="/dashboard"
-                  className="inline-flex items-center gap-2 hover:text-real-orange transition-colors"
-                >
-                  <User size={16} />
-                  <span>Dashboard</span>
-                </Link>
-                <button
-                  onClick={signOut}
-                  className="text-sm font-medium hover:text-real-orange transition-colors"
-                >
-                  Logout
-                </button>
-              </>
+              <Link
+                to="/dashboard"
+                className="inline-flex items-center gap-2 hover:text-real-orange transition-colors"
+              >
+                <User size={16} />
+                <span>Dashboard</span>
+              </Link>
             )}
           </div>
         </div>
@@ -126,15 +112,14 @@ const Header = () => {
           to="/"
           className="flex items-center gap-2"
         >
-          <img src="/logo.png" alt="Logo" className="h-10 lg:h-10 w-auto object-contain" />
+          <img src="/logo.png" alt="Logo" className="w-10 h-5 lg:w-14 lg:h-10 ml-4" />
           <div className="leading-tight">
             <div
               className={cn(
-                "text-xl lg:text-3xl font-extrabold tracking-tight hover:text-blue-700 transition-colors duration-300",
+                "text-xl lg:text-3xl -ml-1 font-extrabold tracking-tight hover:text-blue-700 transition-colors duration-300",
                 // Always dark on mobile for visibility, conditional on desktop
-                isWhiteBackgroundPage 
-                  ? "text-black" 
-                  : "text-black lg:text-white lg:group-hover:text-blue-700"
+                "text-black lg:text-black lg:group-hover:text-blue-700",
+                !shouldUseDarkText && "lg:text-white"
               )}
             >
               Azumah Homes
@@ -149,11 +134,7 @@ const Header = () => {
               className={({ isActive }) =>
                 cn(
                   "font-medium transition-colors",
-                  isActive 
-                    ? "text-real-orange" 
-                    : isWhiteBackgroundPage 
-                      ? "text-black hover:text-real-orange" 
-                      : "text-white hover:text-real-orange"
+                  isActive ? "text-real-orange" : shouldUseDarkText ? "text-black hover:text-real-orange" : "text-white hover:text-real-orange"
                 )
               }
             >
@@ -164,11 +145,7 @@ const Header = () => {
               className={({ isActive }) =>
                 cn(
                   "font-medium transition-colors",
-                  isActive 
-                    ? "text-real-orange" 
-                    : isWhiteBackgroundPage 
-                      ? "text-black hover:text-real-orange" 
-                      : "text-white hover:text-real-orange"
+                  isActive ? "text-real-orange" : shouldUseDarkText ? "text-black hover:text-real-orange" : "text-white hover:text-real-orange"
                 )
               }
             >
@@ -180,11 +157,7 @@ const Header = () => {
               className={({ isActive }) =>
                 cn(
                   "font-medium transition-colors",
-                  isActive 
-                    ? "text-real-orange" 
-                    : isWhiteBackgroundPage 
-                      ? "text-black hover:text-real-orange" 
-                      : "text-white hover:text-real-orange"
+                  isActive ? "text-real-orange" : shouldUseDarkText ? "text-black hover:text-real-orange" : "text-white hover:text-real-orange"
                 )
               }
             >
@@ -195,11 +168,7 @@ const Header = () => {
               className={({ isActive }) =>
                 cn(
                   "font-medium transition-colors",
-                  isActive 
-                    ? "text-real-orange" 
-                    : isWhiteBackgroundPage 
-                      ? "text-black hover:text-real-orange" 
-                      : "text-white hover:text-real-orange"
+                  isActive ? "text-real-orange" : shouldUseDarkText ? "text-black hover:text-real-orange" : "text-white hover:text-real-orange"
                 )
               }
             >
@@ -210,11 +179,7 @@ const Header = () => {
               className={({ isActive }) =>
                 cn(
                   "font-medium transition-colors",
-                  isActive 
-                    ? "text-real-orange" 
-                    : isWhiteBackgroundPage 
-                      ? "text-black hover:text-real-orange" 
-                      : "text-white hover:text-real-orange"
+                  isActive ? "text-real-orange" : shouldUseDarkText ? "text-black hover:text-real-orange" : "text-white hover:text-real-orange"
                 )
               }
             >
@@ -227,7 +192,8 @@ const Header = () => {
               <Link to="/dashboard/favorites" className={cn(
                 "hidden lg:flex items-center gap-1 px-3 py-2",
                 // Always dark on mobile for visibility, conditional on desktop
-                isWhiteBackgroundPage ? "text-black" : "text-black lg:text-white"
+                "text-black",
+                !shouldUseDarkText && "lg:text-white"
               )}>
                 <Heart size={20} />
               </Link>
@@ -243,7 +209,7 @@ const Header = () => {
                 <Link to="/submit-blog" className="hidden lg:inline-block">
                   <Button variant="outline" className={cn(
                     "border-2 border-real-orange text-real-orange hover:bg-real-orange hover:text-white bg-white/90 backdrop-blur-sm",
-                    !isWhiteBackgroundPage && "border-white text-white bg-white/10 hover:bg-white hover:text-real-orange"
+                    !shouldUseDarkText && "border-white text-white bg-white/10 hover:bg-white hover:text-real-orange"
                   )}>
                     Add Blog
                   </Button>
@@ -348,18 +314,20 @@ const Header = () => {
             >
               Contact
             </NavLink>
-            <NavLink
-              to="/dashboard"
-              className={({ isActive }) =>
-                cn(
-                  "text-xl font-medium",
-                  isActive ? "text-real-orange" : "text-gray-800"
-                )
-              }
-              onClick={toggleMobileMenu}
-            >
-              Dashboard
-            </NavLink>
+            {user && (
+              <NavLink
+                to="/dashboard"
+                className={({ isActive }) =>
+                  cn(
+                    "text-xl font-medium",
+                    isActive ? "text-real-orange" : "text-gray-800"
+                  )
+                }
+                onClick={toggleMobileMenu}
+              >
+                Dashboard
+              </NavLink>
+            )}
             {isAdmin && (
               <>
                 <NavLink
@@ -401,25 +369,11 @@ const Header = () => {
             </div>
           )}
 
-          {user && (
-            <div className="mt-8 pt-6 border-t lg:hidden">
-              <button
-                onClick={() => {
-                  signOut();
-                  toggleMobileMenu();
-                }}
-                className="w-full bg-red-600 text-white py-3 px-6 rounded-md text-center font-medium hover:bg-red-700 transition-colors"
-              >
-                Logout
-              </button>
-            </div>
-          )}
-
           <div className="mt-10 border-t pt-6 lg:hidden">
             <div className="flex flex-col space-y-4">
               <div className="flex items-center gap-2">
                 <Phone size={16} className="text-real-orange" />
-                <span>0551319363</span>
+                <span>0542690596</span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail size={16} className="text-real-orange" />
